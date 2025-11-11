@@ -3,61 +3,59 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  bool _obscureText = true;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
+  final _nameFocusNode = FocusNode();
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
-
-  bool _animationsInitialized = false;
+  final _confirmPasswordFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    // Listen to focus changes to rebuild the UI
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
+
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutBack),
+    );
+
+    _controller.forward();
+
+    _nameFocusNode.addListener(() => setState(() {}));
     _emailFocusNode.addListener(() => setState(() {}));
     _passwordFocusNode.addListener(() => setState(() {}));
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_animationsInitialized) {
-      _controller = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 1200),
-      );
-
-      _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-      );
-
-      _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOutBack),
-      );
-
-      _controller.forward();
-      _animationsInitialized = true;
-    }
+    _confirmPasswordFocusNode.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _nameFocusNode.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 
@@ -80,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   Widget _buildTopBluePart(Size size) {
     return Container(
-      height: size.height * 0.45,
+      height: size.height * 0.4,
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -96,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           children: [
             const Spacer(flex: 2),
             Icon(
-              Icons.check_circle_outline_rounded,
+              Icons.person_add_alt_1_rounded,
               size: 80,
               color: Colors.white.withOpacity(0.9),
               shadows: [
@@ -109,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             ),
             const SizedBox(height: 16),
             Text(
-              'Iniciar Sesión',
+              'Crear Cuenta',
               style: GoogleFonts.poppins(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -137,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       child: FadeTransition(
         opacity: _fadeAnimation,
         child: Container(
-          height: size.height * 0.65,
+          height: size.height * 0.7,
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
           decoration: const BoxDecoration(
@@ -161,9 +159,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildTextField(
+                    focusNode: _nameFocusNode,
+                    icon: Icons.person_outline,
+                    hint: 'Nombre Completo',
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField(
                     focusNode: _emailFocusNode,
                     icon: Icons.alternate_email,
-                    hint: 'Usuario / Correo',
+                    hint: 'Correo Electrónico',
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
@@ -171,11 +175,22 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     icon: Icons.lock_outline,
                     hint: 'Contraseña',
                     isPassword: true,
+                    obscureText: _obscurePassword,
+                    toggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    focusNode: _confirmPasswordFocusNode,
+                    icon: Icons.lock_outline,
+                    hint: 'Confirmar Contraseña',
+                    isPassword: true,
+                    obscureText: _obscureConfirmPassword,
+                    toggleObscure: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                   ),
                   const SizedBox(height: 32),
-                  _buildLoginButton(),
+                  _buildRegisterButton(),
                   const SizedBox(height: 24),
-                  _buildRegisterLink(),
+                  _buildLoginLink(),
                 ],
               ),
             ),
@@ -190,11 +205,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     required IconData icon,
     required String hint,
     bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? toggleObscure,
   }) {
     final bool hasFocus = focusNode.hasFocus;
     return TextFormField(
       focusNode: focusNode,
-      obscureText: isPassword ? _obscureText : false,
+      obscureText: obscureText,
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
@@ -205,10 +222,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
-                  _obscureText ? Icons.visibility_off : Icons.visibility,
+                  obscureText ? Icons.visibility_off : Icons.visibility,
                   color: Colors.grey[500],
                 ),
-                onPressed: () => setState(() => _obscureText = !_obscureText),
+                onPressed: toggleObscure,
               )
             : null,
         filled: true,
@@ -230,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildLoginButton() {
+  Widget _buildRegisterButton() {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -250,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       child: ElevatedButton(
         onPressed: () {
           if (_formKey.currentState?.validate() ?? false) {
-            context.go('/home');
+            // Register logic
           }
         },
         style: ElevatedButton.styleFrom(
@@ -258,10 +275,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 0, // Shadow is handled by the container
+          elevation: 0,
         ),
         child: Text(
-          'Iniciar Sesión',
+          'Registrarse',
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -271,18 +288,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildRegisterLink() {
+  Widget _buildLoginLink() {
     return GestureDetector(
-      onTap: () => context.go('/register'),
+      onTap: () => context.go('/'),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            "¿No tienes una cuenta? ",
+            "¿Ya tienes una cuenta? ",
             style: GoogleFonts.poppins(color: Colors.grey[600]),
           ),
           Text(
-            'Regístrate',
+            'Inicia Sesión',
             style: GoogleFonts.poppins(
               color: const Color(0xFF007BFF),
               fontWeight: FontWeight.bold,
