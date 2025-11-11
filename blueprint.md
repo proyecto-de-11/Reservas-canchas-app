@@ -1,8 +1,8 @@
-# Blueprint: Aplicación con Autenticación y Pantalla de Inicio Elegante
+# Blueprint: Aplicación con Autenticación y Pantallas Funcionales
 
 ## Descripción General
 
-Crear una aplicación Flutter con un flujo de autenticación de usuario completo (inicio de sesión y registro), una `HomeScreen` elegante y una pantalla funcional para `Crear Reservas` con un formulario detallado. La navegación se gestiona con `go_router`.
+Crear una aplicación Flutter con un flujo de autenticación completo, una `HomeScreen` elegante, un formulario detallado para `Crear Reservas` y una pantalla de `Perfil de Usuario` rica en información. La navegación se gestiona con `go_router`.
 
 ## Estilo y Diseño
 
@@ -10,8 +10,9 @@ Crear una aplicación Flutter con un flujo de autenticación de usuario completo
 - **Tipografía:** Se emplea `google_fonts` con la fuente "Poppins" para una apariencia profesional.
 - **Componentes y Efectos Visuales:**
     - **Menú lateral (Drawer):** Centro de navegación principal con diseño moderno.
-    - **Tarjetas (`Card`):** Se usan para agrupar información de forma limpia y con sombras sutiles, como en el formulario de reservas.
+    - **Tarjetas (`Card`):** Se usan para agrupar información de forma limpia y con sombras sutiles.
     - **Selectores Nativos:** Se usan `showDatePicker` y `showTimePicker` para una experiencia de usuario familiar.
+    - **Botón de Acción Flotante (FAB):** Se usa para acciones primarias, como "Editar Perfil".
 
 ## Funcionalidades y Flujo
 
@@ -29,24 +30,31 @@ Crear una aplicación Flutter con un flujo de autenticación de usuario completo
 
 - **Ruta:** `/home`
 - **Diseño:** Saludo de bienvenida y tarjeta de acción principal.
-- **Navegación:** El `Drawer` y la tarjeta principal dirigen a la pantalla de crear reserva.
+- **Navegación:** El `Drawer` permite navegar a `/create-reservation` y `/profile`.
 
 ### 4. Pantalla de Crear Reserva (`create_reservation_screen.dart`)
 
 - **Ruta:** `/create-reservation`
-- **Estructura:** Convertida a `StatefulWidget` para manejar el estado del formulario.
-- **Diseño del Formulario:**
-    - **Tarjeta de Detalles:** Una `Card` central agrupa todos los campos de la reserva.
-    - **Campos Interactivos:**
-        - `Fecha de la Reserva`: Al tocar, abre un selector de fecha (`showDatePicker`).
-        - `Hora de Inicio`: Abre un selector de hora (`showTimePicker`).
-        - `Hora de Fin`: Abre un selector de hora (`showTimePicker`).
-    - **Campos Automáticos y Fijos:**
-        - `Total de Horas`: Se calcula automáticamente basado en la hora de inicio y fin.
-        - `Método de Pago`: Valor fijo mostrado como "Efectivo".
-        - `Monto Total a Pagar`: Valor de ejemplo (placeholder).
-        - `Estado`: Valor fijo mostrado como "Pendiente".
-    - **Botón de Confirmación:** Un `ElevatedButton` para enviar el formulario.
+- **Diseño:** Formulario detallado para crear una nueva reserva.
+
+### 5. Pantalla de Perfil (`profile_screen.dart`)
+
+- **Ruta:** `/profile`
+- **Diseño Detallado:**
+    - **Cabecera de Perfil:** Muestra una foto de perfil (con un icono para cambiarla), el nombre completo del usuario y su correo.
+    - **Tarjeta de "Información Personal":**
+        - Nombre completo
+        - Documento de identidad
+        - Fecha de nacimiento
+        - Género
+    - **Tarjeta de "Información de Contacto":**
+        - Teléfono
+        - Ciudad
+        - País
+    - **Tarjeta de "Biografía":** Un espacio para una descripción personal.
+    - **Botón de Cerrar Sesión:** Para salir de la aplicación.
+    - **Botón de Editar (FAB):** Un `FloatingActionButton` con un icono de lápiz, preparado para activar el modo de edición.
+- **Navegación:** El botón "Cerrar Sesión" redirige a `/`.
 
 ## Navegación (Routing)
 
@@ -56,16 +64,14 @@ La navegación es manejada por `go_router`. Las rutas configuradas son:
 - `/register`: `RegisterScreen`.
 - `/home`: `HomeScreen`.
 - `/create-reservation`: `CreateReservationScreen`.
+- `/profile`: `ProfileScreen`.
 
 ## Pasos de Implementación Realizados
 
-1.  **Flujo de Autenticación y `HomeScreen`:** Se crearon las pantallas iniciales y se reestructuró la `HomeScreen`.
-2.  **Conexión de la Pantalla de Reservas:**
-    - Se creó el archivo `lib/create_reservation_screen.dart`.
-    - Se añadió la ruta `/create-reservation` en `go_router`.
-    - Se conectaron los botones desde `home_screen.dart`.
-3.  **Implementación del Formulario de Reserva:**
-    - Se añadió el paquete `intl` para el formato de fechas.
-    - Se convirtió `CreateReservationScreen` en un `StatefulWidget`.
-    - Se diseñó y construyó el formulario detallado con campos interactivos para fecha y hora, y campos de información estática.
-4.  **Actualización de Blueprint:** Se documentó la estructura detallada del nuevo formulario de reservas.
+1.  **Flujo de Autenticación y `HomeScreen`:** Implementación inicial.
+2.  **Formulario de Reserva:** Construcción y corrección de errores.
+3.  **Pantalla de Perfil (Versión 1):** Creación inicial y conexión de la ruta.
+4.  **Rediseño Detallado de la Pantalla de Perfil:**
+    - Se reestructuró `profile_screen.dart` para incluir toda la información solicitada, organizada en tarjetas lógicas y con un diseño más rico.
+    - Se añadió un `FloatingActionButton` para futuras funcionalidades de edición.
+5.  **Actualización de Blueprint:** Se documentó el nuevo diseño detallado de la pantalla de perfil.

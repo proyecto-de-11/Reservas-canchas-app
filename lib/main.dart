@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/date_symbol_data_local.dart'; // Importa la inicialización
+import 'package:intl/date_symbol_data_local.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
 import 'create_reservation_screen.dart';
+import 'profile_screen.dart'; // Importa la nueva pantalla de perfil
 
-void main() async { // Convierte main en async
-  // Inicializa los datos de localización para español
+void main() async { 
   await initializeDateFormatting('es_ES', null);
   runApp(const MyApp());
 }
@@ -37,6 +37,13 @@ final GoRouter _router = GoRouter(
           path: 'create-reservation',
           builder: (BuildContext context, GoRouterState state) {
             return const CreateReservationScreen();
+          },
+        ),
+        // Nueva ruta para la pantalla de perfil
+        GoRoute(
+          path: 'profile',
+          builder: (BuildContext context, GoRouterState state) {
+            return const ProfileScreen();
           },
         ),
       ],
