@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/owner_home_screen.dart';
 
-class CourtDetailsScreen extends StatelessWidget {
+class CourtDetailsScreen extends StatefulWidget {
   final Court court;
 
   const CourtDetailsScreen({super.key, required this.court});
+
+  @override
+  State<CourtDetailsScreen> createState() => _CourtDetailsScreenState();
+}
+
+class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
+  // Estado inicial de ejemplo: Lunes a Viernes disponibles, fin de semana no.
+  final Set<String> _selectedDays = {'L', 'M', 'X', 'J', 'V'};
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +29,13 @@ class CourtDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRow(context, icon: Icons.location_on, title: 'Dirección', content: court.address),
+                  _buildInfoRow(context, icon: Icons.location_on, title: 'Dirección', content: widget.court.address),
                   const SizedBox(height: 24),
-                  _buildInfoRow(context, icon: Icons.monetization_on, title: 'Precio por Hora', content: '\$${court.price.toStringAsFixed(2)}'),
+                  _buildInfoRow(context, icon: Icons.monetization_on, title: 'Precio por Hora', content: '\$${widget.court.price.toStringAsFixed(2)}'),
+                  const SizedBox(height: 24),
+                  _buildInfoRow(context, icon: Icons.schedule, title: 'Horario', content: 'Lunes a Domingo\n9:00 AM - 10:00 PM'),
+                  const SizedBox(height: 24),
+                  _buildAvailabilitySection(context),
                   const SizedBox(height: 24),
                   _buildDescriptionSection(context),
                   const SizedBox(height: 32),
@@ -46,14 +58,14 @@ class CourtDetailsScreen extends StatelessWidget {
       iconTheme: const IconThemeData(color: Colors.white),
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
-          court.name,
+          widget.court.name,
           style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         background: Stack(
           fit: StackFit.expand,
           children: [
             Image.network(
-              court.imageUrl,
+              widget.court.imageUrl,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.error, color: Colors.white, size: 50)),
             ),
@@ -101,6 +113,79 @@ class CourtDetailsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildAvailabilitySection(BuildContext context) {
+    final List<String> days = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Días Disponibles',
+          style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: days.map((day) {
+            return _buildDayChip(day, _selectedDays.contains(day));
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  // Widget de botón de día personalizado
+  Widget _buildDayChip(String day, bool isSelected) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (_selectedDays.contains(day)) {
+            _selectedDays.remove(day);
+          } else {
+            _selectedDays.add(day);
+          }
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 42, 
+        height: 42,
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.7)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isSelected ? null : Colors.grey[200],
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: theme.primaryColor.withOpacity(0.5),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  )
+                ]
+              : [],
+        ),
+        child: Center(
+          child: Text(
+            day,
+            style: GoogleFonts.poppins(
+              color: isSelected ? Colors.white : Colors.grey[600],
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDescriptionSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,7 +196,7 @@ class CourtDetailsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'Disfruta de una experiencia de primer nivel en nuestra cancha. Perfectamente mantenida y con instalaciones de alta calidad, es el lugar ideal para tus partidos y entrenamientos. Contamos con iluminación profesional para juegos nocturnos y un entorno seguro y agradable para toda la familia.', // Placeholder
+          'Disfruta de una experiencia de primer nivel en nuestra cancha. Perfectamente mantenida y con instalaciones de alta calidad, es el lugar ideal para tus partidos y entrenamientos. Contamos con iluminación profesional para juegos nocturnos y un entorno seguro y agradable para toda la familia.',
           style: GoogleFonts.poppins(fontSize: 15, color: Colors.black54, height: 1.6),
         ),
       ],

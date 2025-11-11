@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -96,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           children: [
             const Spacer(flex: 2),
             Icon(
-              Icons.check_circle_outline_rounded,
+              Icons.sports_soccer, // Changed icon
               size: 80,
               color: Colors.white.withAlpha(230),
               shadows: [
@@ -109,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             ),
             const SizedBox(height: 16),
             Text(
-              'Iniciar Sesión',
+              'Bienvenido', // Changed text
               style: GoogleFonts.poppins(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -174,6 +173,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   ),
                   const SizedBox(height: 32),
                   _buildLoginButton(),
+                  const SizedBox(height: 12),
+                  _buildOwnerLoginButton(), // <-- BOTÓN DE PROPIETARIO AÑADIDO
                   const SizedBox(height: 24),
                   _buildRegisterLink(),
                 ],
@@ -266,6 +267,25 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
+        ),
+      ),
+    );
+  }
+
+  // --- NUEVO WIDGET PARA EL BOTÓN DE PROPIETARIO ---
+  Widget _buildOwnerLoginButton() {
+    return OutlinedButton.icon(
+      onPressed: () => context.go('/owner-home'),
+      icon: const Icon(Icons.business_center_outlined),
+      label: const Text('Soy Propietario'),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color(0xFF007BFF),
+        side: const BorderSide(color: Color(0xFF007BFF), width: 1.5),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: GoogleFonts.poppins(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

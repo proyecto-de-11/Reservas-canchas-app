@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // --- Data Model (Sin cambios) ---
 class Court {
@@ -111,10 +112,11 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Mis Canchas'),
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
+        title: const Text('Mis Canchas', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
         elevation: 1,
+        centerTitle: true,
       ),
       drawer: _buildOwnerDrawer(context),
       body: ListView.builder(
@@ -125,10 +127,37 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
           return _buildCourtCard(context, court);
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: _buildFAB(context, theme),
+    );
+  }
+  
+  Widget _buildFAB(BuildContext context, ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: theme.primaryColor.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FloatingActionButton.extended(
         onPressed: () => context.go('/owner-home/manage-court'),
-        label: const Text('Añadir Cancha'),
-        icon: const Icon(Icons.add),
+        label: Text(
+            'Añadir Cancha',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white)
+        ),
+        icon: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        highlightElevation: 0,
       ),
     );
   }
@@ -181,16 +210,17 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                     children: [
                       Text(
                         court.name,
-                        style: textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          shadows: [const Shadow(blurRadius: 2, color: Colors.black54)],
+                        style: GoogleFonts.poppins(
+                          fontSize: 24, 
+                          color: Colors.white, 
+                          fontWeight: FontWeight.bold, 
+                          shadows: [const Shadow(blurRadius: 3, color: Colors.black87)]
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '\$${court.price.toStringAsFixed(2)} / hora',
-                        style: textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w500),
+                        style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 16),
                       ),
                     ],
                   ),

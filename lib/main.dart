@@ -9,9 +9,9 @@ import 'home_screen.dart';
 import 'create_reservation_screen.dart';
 import 'profile_screen.dart';
 import 'owner_home_screen.dart';
-import 'manage_court_screen.dart'; 
+import 'manage_court_screen.dart';
 
-void main() async { 
+void main() async {
   await initializeDateFormatting('es_ES', null);
   runApp(const MyApp());
 }
@@ -64,8 +64,22 @@ final GoRouter _router = GoRouter(
             GoRoute(
               path: 'court-details',
               builder: (BuildContext context, GoRouterState state) {
-                final Court court = state.extra as Court;
+                // --- INICIO DE LA CORRECCIÓN ---
+                final Court? court = state.extra as Court?;
+
+                // Si los datos de la cancha no existen, muestra una pantalla de error.
+                if (court == null) {
+                  return Scaffold(
+                    appBar: AppBar(title: const Text('Error')),
+                    body: const Center(
+                      child: Text('No se pudo cargar la información de la cancha.'),
+                    ),
+                  );
+                }
+
+                // Si los datos existen, muestra la pantalla de detalles.
                 return CourtDetailsScreen(court: court);
+                // --- FIN DE LA CORRECCIÓN ---
               },
             ),
           ],
@@ -86,6 +100,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         textTheme: GoogleFonts.poppinsTextTheme(),
+        primaryColor: const Color(0xFF007BFF), // Un azul más moderno
       ),
       debugShowCheckedModeBanner: false,
     );
