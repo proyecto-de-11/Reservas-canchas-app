@@ -12,8 +12,8 @@ class CourtDetailsScreen extends StatefulWidget {
 }
 
 class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
-  // Estado inicial de ejemplo: Lunes a Viernes disponibles, fin de semana no.
-  final Set<String> _selectedDays = {'L', 'M', 'X', 'J', 'V'};
+  // Los días disponibles ahora son fijos para esta pantalla de solo lectura.
+  final Set<String> _availableDays = {'L', 'M', 'X', 'J', 'V'};
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
                   const SizedBox(height: 24),
                   _buildDescriptionSection(context),
                   const SizedBox(height: 32),
-                  _buildActionButtons(context),
+                  _buildActionButtons(context), // <-- SECCIÓN DE ACCIONES ACTUALIZADA
                 ],
               ),
             ),
@@ -127,42 +127,32 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: days.map((day) {
-            return _buildDayChip(day, _selectedDays.contains(day));
+            return _buildDayChip(day, _availableDays.contains(day));
           }).toList(),
         ),
       ],
     );
   }
 
-  // Widget de botón de día personalizado
-  Widget _buildDayChip(String day, bool isSelected) {
+  Widget _buildDayChip(String day, bool isAvailable) {
     final theme = Theme.of(context);
-
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (_selectedDays.contains(day)) {
-            _selectedDays.remove(day);
-          } else {
-            _selectedDays.add(day);
-          }
-        });
-      },
+      onTap: null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: 42, 
+        width: 42,
         height: 42,
         decoration: BoxDecoration(
-          gradient: isSelected
+          gradient: isAvailable
               ? LinearGradient(
                   colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.7)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: isSelected ? null : Colors.grey[200],
+          color: isAvailable ? null : Colors.grey[200],
           borderRadius: BorderRadius.circular(12),
-          boxShadow: isSelected
+          boxShadow: isAvailable
               ? [
                   BoxShadow(
                     color: theme.primaryColor.withOpacity(0.5),
@@ -176,8 +166,8 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
           child: Text(
             day,
             style: GoogleFonts.poppins(
-              color: isSelected ? Colors.white : Colors.grey[600],
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isAvailable ? Colors.white : Colors.grey[600],
+              fontWeight: isAvailable ? FontWeight.bold : FontWeight.w500,
               fontSize: 16,
             ),
           ),
@@ -203,31 +193,24 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
     );
   }
 
+  // --- CORRECCIÓN: Widget de acciones del propietario ---
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            icon: const Icon(Icons.calendar_today, color: Colors.white),
-            label: const Text('Reservar Ahora'),
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Theme.of(context).primaryColor,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              textStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-          ),
+    return Center(
+      child: FilledButton.icon(
+        icon: const Icon(Icons.share_rounded),
+        label: const Text('Compartir Cancha'),
+        onPressed: () {
+          // Lógica para compartir: por ejemplo, usando el paquete `share_plus`
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Función de compartir no implementada.')),
+          );
+        },
+        style: FilledButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+          textStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
-        const SizedBox(width: 16),
-        IconButton(
-          icon: const Icon(Icons.share, size: 28),
-          color: Theme.of(context).primaryColor,
-          onPressed: () {},
-        ),
-      ],
+      ),
     );
   }
 }
