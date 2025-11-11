@@ -7,10 +7,10 @@ class CreateReservationScreen extends StatefulWidget {
   const CreateReservationScreen({super.key});
 
   @override
-  _CreateReservationScreenState createState() => _CreateReservationScreenState();
+  CreateReservationScreenState createState() => CreateReservationScreenState();
 }
 
-class _CreateReservationScreenState extends State<CreateReservationScreen> {
+class CreateReservationScreenState extends State<CreateReservationScreen> {
   DateTime? _selectedDate;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
@@ -206,7 +206,7 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 16),
         elevation: 5,
-        shadowColor: const Color(0xFF007BFF).withOpacity(0.5),
+        shadowColor: const Color(0xFF007BFF).withAlpha(128),
       ),
     );
   }

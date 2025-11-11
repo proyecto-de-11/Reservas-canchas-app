@@ -98,10 +98,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             Icon(
               Icons.check_circle_outline_rounded,
               size: 80,
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withAlpha(230),
               shadows: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withAlpha(51),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 )
@@ -117,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 letterSpacing: 2,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withOpacity(0.25),
+                    color: Colors.black.withAlpha(64),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -241,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF007BFF).withOpacity(0.4),
+            color: const Color(0xFF007BFF).withAlpha(102),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),

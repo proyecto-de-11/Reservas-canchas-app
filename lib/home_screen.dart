@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -109,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildDrawer(BuildContext context) {
+  Drawer _buildDrawer(BuildContext context) {
     return Drawer(
       child: Container(
         color: Colors.white,
@@ -123,6 +122,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   _buildDrawerItem(context, icon: Icons.sports_soccer_outlined, text: 'Reservar Cancha', color: Colors.orange, onTap: () => context.go('/create-reservation')),
                   _buildDrawerItem(context, icon: Icons.calendar_today_outlined, text: 'Mis Reservas', color: Colors.green, onTap: () {}),
                   _buildDrawerItem(context, icon: Icons.history_outlined, text: 'Historial', color: Colors.purple, onTap: () {}),
+                  const Divider(thickness: 1, indent: 16, endIndent: 16, height: 32),
+                  _buildDrawerItem(context, icon: Icons.business_center_outlined, text: 'Soy Propietario', color: const Color(0xFF0056B3), onTap: () => context.go('/owner-home')),
                   const Divider(thickness: 1, indent: 16, endIndent: 16, height: 32),
                   _buildDrawerItem(context, icon: Icons.account_circle_outlined, text: 'Mi Perfil', color: Colors.blue, onTap: () => context.go('/profile')),
                   _buildDrawerItem(context, icon: Icons.settings_outlined, text: 'Configuración', color: Colors.grey, onTap: () {}),
@@ -186,8 +187,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        splashColor: color.withOpacity(0.2),
-        highlightColor: color.withOpacity(0.1),
+        splashColor: color.withAlpha(51),
+        highlightColor: color.withAlpha(25),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
@@ -247,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
                 elevation: 5,
-                shadowColor: const Color(0xFF007BFF).withOpacity(0.5),
+                shadowColor: const Color(0xFF007BFF).withAlpha(128),
               ),
               child: Text(
                 'Reservar una Cancha',

@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:myapp/court_details_screen.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
 import 'create_reservation_screen.dart';
-import 'profile_screen.dart'; // Importa la nueva pantalla de perfil
+import 'profile_screen.dart';
+import 'owner_home_screen.dart';
+import 'manage_court_screen.dart'; 
 
 void main() async { 
   await initializeDateFormatting('es_ES', null);
@@ -39,12 +42,33 @@ final GoRouter _router = GoRouter(
             return const CreateReservationScreen();
           },
         ),
-        // Nueva ruta para la pantalla de perfil
         GoRoute(
           path: 'profile',
           builder: (BuildContext context, GoRouterState state) {
             return const ProfileScreen();
           },
+        ),
+        GoRoute(
+          path: 'owner-home',
+          builder: (BuildContext context, GoRouterState state) {
+            return const OwnerHomeScreen();
+          },
+          routes: <RouteBase>[
+            GoRoute(
+              path: 'manage-court',
+              builder: (BuildContext context, GoRouterState state) {
+                final Court? court = state.extra as Court?;
+                return ManageCourtScreen(court: court);
+              },
+            ),
+            GoRoute(
+              path: 'court-details',
+              builder: (BuildContext context, GoRouterState state) {
+                final Court court = state.extra as Court;
+                return CourtDetailsScreen(court: court);
+              },
+            ),
+          ],
         ),
       ],
     ),

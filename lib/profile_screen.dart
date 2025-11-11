@@ -68,9 +68,9 @@ class ProfileScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Stack(
+          const Stack(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 55,
                 backgroundColor: Colors.white,
                 child: CircleAvatar(
@@ -84,7 +84,7 @@ class ProfileScreen extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 18,
                   backgroundColor: Colors.white,
-                  child: Icon(Icons.camera_alt, color: const Color(0xFF007BFF), size: 20),
+                  child: Icon(Icons.camera_alt, color: Color(0xFF007BFF), size: 20),
                 ),
               ),
             ],
