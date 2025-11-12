@@ -1,122 +1,154 @@
+<div align="center">
+
+# Cancha-Now
+### Tu Cancha. Tus Reglas. Tu App.
+
+</div>
 
 <p align="center">
-  <img src="https://storage.googleapis.com/flutter-a-test-ഘ-prod/brand-assets/Cancha-Now-Banner-Small.png" alt="Cancha-Now Banner" width="800"/>
+  <img src="https://storage.googleapis.com/flutter-a-test-ഘ-prod/brand-assets/Cancha-Now-Hero-Frame.png" alt="Cancha-Now Hero"/>
 </p>
 
-<h1 align="center">Cancha-Now: App de Reservas Deportivas</h1>
-
 <p align="center">
-  <!-- Badges -->
-  <img src="https://img.shields.io/badge/Flutter-3.x-blue?style=for-the-badge&logo=flutter" alt="Flutter Version">
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
-  <img src="https://img.shields.io/badge/Platform-Android | iOS | Web-purple?style=for-the-badge" alt="Platforms">
-</p>
-
-> **Cancha-Now** es una aplicación moderna y completa construida con Flutter, diseñada para conectar a jugadores con propietarios de canchas deportivas. La plataforma ofrece una experiencia de usuario fluida y profesional, con interfaces separadas y optimizadas para cada tipo de usuario.
-
----
-
-## ✨ Características Principales
-
-| Módulo        | Funcionalidad                                                               | Estado      |
-|---------------|-----------------------------------------------------------------------------|-------------|
-| 🙍‍♂️ **Jugadores** | **Exploración de Canchas:** Descubre y filtra canchas.                       | ✅ Completo |
-|               | **Reservas Fáciles:** Reserva tus canchas favoritas en pocos pasos.           | ✅ Completo |
-|               | **Perfil de Usuario:** Gestiona tu información y tu historial.               | ✅ Completo |
-| 💼 **Propietarios**| **Gestión de Canchas:** Añade, edita y elimina tus canchas.                   | ✅ Completo |
-|               | **Calendario de Reservas:** Visualiza y gestiona todas tus reservas.        | in-progress 🚧 |
-|               | **Panel de Control:** Obtén estadísticas y reportes.                         | in-progress 🚧 |
-
----
-
-## 🎨 Diseño y Estilo Visual
-
-La aplicación se ha desarrollado con un enfoque en el **diseño premium y la experiencia de usuario**.
-
-- **Paleta de Colores:** Utilizamos un degradado de azul vibrante (`#007BFF` a `#0056B3`) como color principal, combinado con una base de grises neutros y blancos para una apariencia limpia y moderna.
-- **Tipografía:** Empleamos la fuente **Poppins** de Google Fonts, que aporta un toque profesional y una excelente legibilidad en todas las pantallas.
-- **Componentes Visuales:**
-  - **Tarjetas con Elevación:** Las tarjetas de información tienen sombras sutiles y efectos de elevación para crear una sensación de profundidad.
-  - **Iconografía Clara:** Usamos iconos de Material Design para una navegación intuitiva y una rápida comprensión de las acciones.
-  - **Microinteracciones:** Animaciones suaves en los botones y al seleccionar elementos para una experiencia más dinámica.
-
----
-
-## 📸 Vistazo a la App
-
-<p align="center">
-  <img src="https://storage.googleapis.com/flutter-a-test-ഘ-prod/screenshots/Cancha-Now-Owner.png" alt="Owner View" width="250"/>
-  <img src="https://storage.googleapis.com/flutter-a-test-ഘ-prod/screenshots/Cancha-Now-Details.png" alt="Details View" width="250"/>
-  <img src="https://storage.googleapis.com/flutter-a-test-ഘ-prod/screenshots/Cancha-Now-Login.png" alt="Login View" width="250"/>
+    <img src="https://img.shields.io/badge/Flutter-v3.x-0056B3?style=for-the-badge&logo=flutter" alt="Flutter Version">
+    <img src="https://img.shields.io/badge/Estado-Activo-5cb85c?style=for-the-badge" alt="Project Status">
+    <img src="https://img.shields.io/github/last-commit/google/flutter.widgets/main?style=for-the-badge&logo=github&label=updates" alt="Last Commit">
+    <img src="https://img.shields.io/badge/Licencia-MIT-blueviolet?style=for-the-badge" alt="License">
 </p>
 
 ---
 
-## 🚀 Tecnologías Utilizadas
+## 🤔 **¿Qué es Cancha-Now?**
 
-| Tecnología | Propósito |
-|---|---|
-| **Flutter 3** | Framework principal para el desarrollo multiplataforma. |
-| **Dart** | Lenguaje de programación. |
-| **`go_router`** | Gestión de rutas declarativa y robusta. |
-| **`google_fonts`**| Tipografías elegantes y de alto rendimiento. |
-| **`flutter_svg`** | Uso de gráficos vectoriales (SVG). |
+**Cancha-Now** es la solución definitiva para modernizar el mundo de las reservas deportivas. Es un ecosistema digital completo construido en **Flutter** que ofrece una experiencia de usuario premium, fluida y profesional, con interfaces separadas y optimizadas para **Jugadores** y **Propietarios** de canchas.
+
+<br>
+
+## ✨ **¿Por Qué Cancha-Now?**
+
+<table width="100%">
+  <tr>
+    <td align="center" width="33%">
+      <img src="https://storage.googleapis.com/flutter-a-test-ഘ-prod/brand-assets/icon-design.png" width="80">
+      <h3>Diseño de Élite</h3>
+      <p>Interfaces premium con foco en la experiencia de usuario.</p>
+    </td>
+    <td align="center" width="33%">
+      <img src="https://storage.googleapis.com/flutter-a-test-ഘ-prod/brand-assets/icon-speed.png" width="80">
+      <h3>Multiplataforma Nativo</h3>
+      <p>Un solo código base para un rendimiento excepcional en iOS, Android y Web.</p>
+    </td>
+    <td align="center" width="33%">
+      <img src="https://storage.googleapis.com/flutter-a-test-ഘ-prod/brand-assets/icon-stack.png" width="80">
+      <h3>Arquitectura Escalable</h3>
+      <p>Construido para crecer, fácil de mantener y expandir con nuevas funciones.</p>
+    </td>
+  </tr>
+</table>
+
+---
+
+##  галерея: Un Vistazo por Dentro
+
+<table width="100%">
+  <tr>
+    <td align="center">
+      <h4>Login Moderno</h4>
+      <img src="https://storage.googleapis.com/flutter-a-test-ഘ-prod/screenshots/Cancha-Now-Login.png" alt="Login Screen" width="220">
+    </td>
+    <td align="center">
+      <h4>Panel de Propietario</h4>
+      <img src="https://storage.googleapis.com/flutter-a-test-ഘ-prod/screenshots/Cancha-Now-Owner.png" alt="Owner Panel" width="220">
+    </td>
+    <td align="center">
+      <h4>Detalles de Cancha</h4>
+      <img src="https://storage.googleapis.com/flutter-a-test-ഘ-prod/screenshots/Cancha-Now-Details.png" alt="Court Details" width="220">
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🚀 **Stack Tecnológico de Vanguardia**
+
+<p align="center">
+  <i>Solo las mejores herramientas para un producto de primera.</i>
+</p>
+
+<div align="center" style="display: flex; justify-content: center; align-items: center; gap: 15px;">
+  <a href="https://flutter.dev">
+    <img src="https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter">
+  </a>
+  <a href="https://dart.dev">
+    <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white" alt="Dart">
+  </a>
+  <a href="https://firebase.google.com">
+    <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase">
+  </a>
+  <a href="https://pub.dev/packages/go_router">
+    <img src="https://img.shields.io/badge/Go_Router-8A2BE2?style=for-the-badge" alt="Go Router">
+  </a>
+  <a href="https://fonts.google.com">
+    <img src="https://img.shields.io/badge/Google_Fonts-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Google Fonts">
+  </a>
+</div>
 
 ---
 
 <details>
-<summary>🛠️ Guía de Inicio Rápido</summary>
+<summary><h3>🏗️ Ver Arquitectura del Proyecto</h3></summary>
+<br>
 
-Para ejecutar el proyecto en tu entorno de desarrollo, sigue estos pasos:
+```mermaid
+graph TD
+    %% Styling
+    classDef ui fill:#007BFF,stroke:#333,stroke-width:2px,color:#fff;
+    classDef nav fill:#8A2BE2,stroke:#333,stroke-width:2px,color:#fff;
+    classDef logic fill:#5cb85c,stroke:#333,stroke-width:2px,color:#fff;
+    classDef data fill:#FF8C00,stroke:#333,stroke-width:2px,color:#fff;
+    classDef backend fill:#1E90FF,stroke:#333,stroke-width:2px,color:#fff;
 
-1.  **Clona el repositorio:**
-    ```bash
-    git clone https://github.com/tu-usuario/cancha-now.git
-    cd cancha-now
-    ```
+    subgraph "📱 UI Layer"
+        A[LoginScreen]
+        B[HomeScreen]
+        C[OwnerHomeScreen]
+        D[ProfileScreen]
+    end
 
-2.  **Instala las dependencias:**
-    Asegúrate de tener Flutter instalado y luego ejecuta:
-    ```bash
-    flutter pub get
-    ```
+    subgraph "🚦 Navigation"
+        Router(GoRouter)
+    end
 
-3.  **Ejecuta la aplicación:**
-    Puedes lanzar la aplicación en un emulador, un dispositivo físico o en la web con el siguiente comando:
-    ```bash
-    flutter run
-    ```
-</details>
+    subgraph "💼 Logic Layer"
+        F[State Notifiers]
+        G[Services]
+    end
 
-<details>
-<summary>📂 Estructura del Proyecto</summary>
+    subgraph "💾 Data Layer"
+        H[Data Models]
+        I[Repositories]
+    end
 
-El proyecto sigue una arquitectura limpia, separando la lógica de la interfaz de usuario.
+    subgraph "☁️ Backend"
+        J[Firebase / API]
+    end
 
-```
-lib/
-├── main.dart                 # Punto de entrada y configuración de rutas
-├── home_screen.dart          # Pantalla principal para jugadores
-├── owner_home_screen.dart    # Pantalla principal para propietarios
-├── login_screen.dart         # Pantalla de inicio de sesión
-├── register_screen.dart      # Pantalla de registro
-├── create_reservation_screen.dart # Formulario para crear una reserva
-├── profile_screen.dart       # Pantalla de perfil de usuario
-└── ...                       # Otros widgets y modelos
+    A & B & C & D --> Router --> A & B & C & D;
+    B & C & D --> F --> G --> I --> J;
+    I --> H;
+
+    class A,B,C,D ui;
+    class Router nav;
+    class F,G logic;
+    class H,I data;
+    class J backend;
 ```
 </details>
 
 ---
 
-## 🛣️ Roadmap (Futuras Mejoras)
-
-- [ ] **Sistema de Pagos:** Integración con pasarelas de pago para reservas online.
-- [ ] **Notificaciones Push:** Recordatorios de reservas y promociones.
-- [ ] **Calificaciones y Reseñas:** Sistema para que los jugadores califiquen las canchas.
-- [ ] **Chat en la App:** Comunicación directa entre jugadores y propietarios.
-
----
-
-## 📜 Licencia
-
-Distribuido bajo la Licencia MIT. Ver `LICENSE` para más información.
+<div align="center">
+  <h2>¿Listo para empezar?</h2>
+  <p>Clona el repositorio y lleva la gestión de canchas al siguiente nivel.</p>
+  <pre><code>git clone https://github.com/tu-usuario/cancha-now.git && cd cancha-now && flutter pub get && flutter run</code></pre>
+</div>
