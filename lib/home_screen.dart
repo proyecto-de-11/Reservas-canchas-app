@@ -123,8 +123,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   _buildDrawerItem(context, icon: Icons.calendar_today_outlined, text: 'Mis Reservas', color: Colors.green, onTap: () {}),
                   _buildDrawerItem(context, icon: Icons.history_outlined, text: 'Historial', color: Colors.purple, onTap: () {}),
                   const Divider(thickness: 1, indent: 16, endIndent: 16, height: 32),
-                  _buildDrawerItem(context, icon: Icons.business_center_outlined, text: 'Soy Propietario', color: const Color(0xFF0056B3), onTap: () => context.go('/owner-home')),
-                  const Divider(thickness: 1, indent: 16, endIndent: 16, height: 32),
                   _buildDrawerItem(context, icon: Icons.account_circle_outlined, text: 'Mi Perfil', color: Colors.blue, onTap: () => context.go('/profile')),
                   _buildDrawerItem(context, icon: Icons.settings_outlined, text: 'Configuración', color: Colors.grey, onTap: () {}),
                 ],

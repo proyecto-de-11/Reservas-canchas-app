@@ -10,6 +10,7 @@ import 'create_reservation_screen.dart';
 import 'profile_screen.dart';
 import 'owner_home_screen.dart';
 import 'manage_court_screen.dart';
+import 'create_court_screen.dart';
 
 void main() async {
   await initializeDateFormatting('es_ES', null);
@@ -54,6 +55,12 @@ final GoRouter _router = GoRouter(
             return const OwnerHomeScreen();
           },
           routes: <RouteBase>[
+             GoRoute(
+              path: 'create-court',
+              builder: (BuildContext context, GoRouterState state) {
+                return const CreateCourtScreen();
+              },
+            ),
             GoRoute(
               path: 'manage-court',
               builder: (BuildContext context, GoRouterState state) {

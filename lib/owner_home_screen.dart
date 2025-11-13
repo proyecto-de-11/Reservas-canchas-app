@@ -107,8 +107,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -126,38 +124,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
           final court = _courts[index];
           return _buildCourtCard(context, court);
         },
-      ),
-      floatingActionButton: _buildFAB(context, theme),
-    );
-  }
-  
-  Widget _buildFAB(BuildContext context, ThemeData theme) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: theme.primaryColor.withOpacity(0.5),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: FloatingActionButton.extended(
-        onPressed: () => context.go('/owner-home/manage-court'),
-        label: Text(
-            'Añadir Cancha',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white)
-        ),
-        icon: const Icon(Icons.add, color: Colors.white),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        highlightElevation: 0,
       ),
     );
   }
@@ -294,29 +260,28 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
       child: Column(
         children: [
           _buildDrawerHeader(context, textTheme),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(8.0),
               children: [
                 _buildDrawerItem(
                   context,
-                  icon: Icons.dashboard_rounded,
+                  icon: Icons.stadium_outlined,
                   text: 'Mis Canchas',
                   isSelected: true,
                   onTap: () => context.pop(),
                 ),
                 _buildDrawerItem(
                   context,
-                  icon: Icons.calendar_month_rounded,
-                  text: 'Calendario de Reservas',
-                  onTap: () {},
+                  icon: Icons.add_location_alt_outlined,
+                  text: 'Crear Cancha',
+                  onTap: () => context.go('/owner-home/create-court'),
                 ),
-                const Divider(height: 20, indent: 16, endIndent: 16),
                 _buildDrawerItem(
                   context,
-                  icon: Icons.switch_account_rounded,
-                  text: 'Cambiar a Modo Jugador',
-                  onTap: () => context.go('/home'),
+                  icon: Icons.calendar_today_outlined,
+                  text: 'Calendario de Reservas',
+                  onTap: () {},
                 ),
               ],
             ),
