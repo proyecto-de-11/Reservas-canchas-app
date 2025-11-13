@@ -12,6 +12,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
+  int _selectedIndex = 0; // Índice para la BottomNavigationBar
 
   @override
   void initState() {
@@ -32,6 +33,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onItemTapped(int index) {
+    if (index == _selectedIndex) return; // No hacer nada si ya está seleccionada
+
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0: // Inicio
+        // Ya estamos aquí, pero por si acaso
+        break;
+      case 1: // Chats
+        context.go('/home/chats');
+        break;
+      case 2: // Perfil
+        context.go('/profile');
+        break;
+    }
   }
 
   @override
@@ -72,6 +93,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ),
         ),
       ),
+      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -123,7 +145,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   _buildDrawerItem(context, icon: Icons.calendar_today_outlined, text: 'Mis Reservas', color: Colors.green, onTap: () {}),
                   _buildDrawerItem(context, icon: Icons.history_outlined, text: 'Historial', color: Colors.purple, onTap: () {}),
                   const Divider(thickness: 1, indent: 16, endIndent: 16, height: 32),
-                  _buildDrawerItem(context, icon: Icons.account_circle_outlined, text: 'Mi Perfil', color: Colors.blue, onTap: () => context.go('/profile')),
                   _buildDrawerItem(context, icon: Icons.settings_outlined, text: 'Configuración', color: Colors.grey, onTap: () {}),
                 ],
               ),
@@ -256,6 +277,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      currentIndex: _selectedIndex,
+      onTap: _onItemTapped,
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home_filled),
+          label: 'Inicio',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.chat_bubble_outline_rounded),
+          label: 'Chats',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline_rounded),
+          label: 'Perfil',
+        ),
+      ],
+      selectedItemColor: const Color(0xFF007BFF),
+      unselectedItemColor: Colors.grey[600],
+      showUnselectedLabels: false,
+      type: BottomNavigationBarType.fixed,
     );
   }
 }

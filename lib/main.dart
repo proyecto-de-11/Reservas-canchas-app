@@ -11,6 +11,8 @@ import 'profile_screen.dart';
 import 'owner_home_screen.dart';
 import 'manage_court_screen.dart';
 import 'create_court_screen.dart';
+import 'chat_list_screen.dart';
+import 'chat_screen.dart';
 
 void main() async {
   await initializeDateFormatting('es_ES', null);
@@ -32,11 +34,29 @@ final GoRouter _router = GoRouter(
           },
         ),
         GoRoute(
-          path: 'home',
-          builder: (BuildContext context, GoRouterState state) {
-            return const HomeScreen();
-          },
-        ),
+            path: 'home',
+            builder: (BuildContext context, GoRouterState state) {
+              return const HomeScreen();
+            },
+            routes: <RouteBase>[
+              GoRoute(
+                path: 'chats',
+                builder: (BuildContext context, GoRouterState state) {
+                  return const ChatListScreen();
+                },
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: ':userId',
+                    builder: (BuildContext context, GoRouterState state) {
+                      final userId = state.pathParameters['userId']!;
+                      final extra = state.extra as Map<String, dynamic>?;
+                      final userName = extra?['userName'] as String? ?? 'Usuario';
+                      return ChatScreen(otherUserName: userName);
+                    },
+                  ),
+                ],
+              ),
+            ]),
         GoRoute(
           path: 'create-reservation',
           builder: (BuildContext context, GoRouterState state) {
@@ -55,7 +75,7 @@ final GoRouter _router = GoRouter(
             return const OwnerHomeScreen();
           },
           routes: <RouteBase>[
-             GoRoute(
+            GoRoute(
               path: 'create-court',
               builder: (BuildContext context, GoRouterState state) {
                 return const CreateCourtScreen();
@@ -71,10 +91,7 @@ final GoRouter _router = GoRouter(
             GoRoute(
               path: 'court-details',
               builder: (BuildContext context, GoRouterState state) {
-                // --- INICIO DE LA CORRECCIÓN ---
                 final Court? court = state.extra as Court?;
-
-                // Si los datos de la cancha no existen, muestra una pantalla de error.
                 if (court == null) {
                   return Scaffold(
                     appBar: AppBar(title: const Text('Error')),
@@ -83,10 +100,7 @@ final GoRouter _router = GoRouter(
                     ),
                   );
                 }
-
-                // Si los datos existen, muestra la pantalla de detalles.
                 return CourtDetailsScreen(court: court);
-                // --- FIN DE LA CORRECCIÓN ---
               },
             ),
           ],
@@ -107,7 +121,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         textTheme: GoogleFonts.poppinsTextTheme(),
-        primaryColor: const Color(0xFF007BFF), // Un azul más moderno
+        primaryColor: const Color(0xFF007BFF),
       ),
       debugShowCheckedModeBanner: false,
     );
