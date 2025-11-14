@@ -13,6 +13,7 @@ import 'manage_court_screen.dart';
 import 'create_court_screen.dart';
 import 'chat_list_screen.dart';
 import 'chat_screen.dart';
+import 'sports_preferences_screen.dart';
 
 void main() async {
   await initializeDateFormatting('es_ES', null);
@@ -48,17 +49,17 @@ final GoRouter _router = GoRouter(
                   GoRoute(
                     path: ':userId',
                     builder: (BuildContext context, GoRouterState state) {
+                      // --- INICIO DE LA CORRECCIÓN ---
                       final userId = state.pathParameters['userId'];
-                      final extra = state.extra as Map<String, dynamic>?;
-                      final userName = extra?['userName'] as String? ?? 'Usuario';
-                      
                       if (userId == null || userId.isEmpty) {
                         return Scaffold(
                           appBar: AppBar(title: const Text('Error de Navegación')),
                           body: const Center(child: Text('El ID del chat no es válido.')),
                         );
                       }
-
+                      // --- FIN DE LA CORRECCIÓN ---
+                      final extra = state.extra as Map<String, dynamic>?;
+                      final userName = extra?['userName'] as String? ?? 'Usuario';
                       return ChatScreen(otherUserName: userName);
                     },
                   ),
@@ -76,6 +77,14 @@ final GoRouter _router = GoRouter(
           builder: (BuildContext context, GoRouterState state) {
             return const ProfileScreen();
           },
+          routes: <RouteBase>[
+            GoRoute(
+              path: 'preferences',
+              builder: (BuildContext context, GoRouterState state) {
+                return const SportsPreferencesScreen();
+              },
+            ),
+          ],
         ),
         GoRoute(
           path: 'owner-home',
@@ -137,7 +146,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         textTheme: GoogleFonts.poppinsTextTheme(),
-        primaryColor: const Color(0xFF185a9d), // Color más oscuro del degradado
+        primaryColor: const Color(0xFF007BFF),
       ),
       debugShowCheckedModeBanner: false,
     );

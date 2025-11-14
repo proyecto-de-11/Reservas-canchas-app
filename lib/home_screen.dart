@@ -44,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     switch (index) {
       case 0:
+        // Ya estamos en home, no hacer nada
         break;
       case 1:
         context.go('/home/chats');
@@ -147,6 +148,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   _buildDrawerItem(context, icon: Icons.sports_soccer_outlined, text: 'Reservar Cancha', color: const Color(0xFF185a9d), onTap: () => context.go('/create-reservation')),
                   _buildDrawerItem(context, icon: Icons.calendar_today_outlined, text: 'Mis Reservas', color: const Color(0xFF185a9d), onTap: () {}),
                   _buildDrawerItem(context, icon: Icons.history_outlined, text: 'Historial', color: const Color(0xFF185a9d), onTap: () {}),
+                  // --- NUEVO BOTÓN DE PREFERENCIAS ---
+                  _buildDrawerItem(context, icon: Icons.favorite_border_outlined, text: 'Preferencias', color: const Color(0xFF185a9d), onTap: () => context.go('/profile/preferences')),
                   const Divider(thickness: 1, indent: 16, endIndent: 16, height: 32),
                   _buildDrawerItem(context, icon: Icons.settings_outlined, text: 'Configuración', color: Colors.grey, onTap: () {}),
                 ],
