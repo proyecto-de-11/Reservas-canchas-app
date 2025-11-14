@@ -105,38 +105,52 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text('Mis Canchas', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 1,
-        centerTitle: true,
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    extendBodyBehindAppBar: true, // Extiende el cuerpo detrás del AppBar
+    appBar: AppBar(
+      title: const Text('Mis Canchas', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+      backgroundColor: Colors.transparent, // Fondo transparente
+      elevation: 0, // Sin sombra
+      foregroundColor: Colors.white, // Color de íconos (como el del drawer)
+      centerTitle: true,
+    ),
+    drawer: _buildOwnerDrawer(context),
+    body: Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF43cea2), Color(0xFF185a9d)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
       ),
-      drawer: _buildOwnerDrawer(context),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-        itemCount: _courts.length,
-        itemBuilder: (context, index) {
-          final court = _courts[index];
-          return _buildCourtCard(context, court);
-        },
+      child: SafeArea(
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+          itemCount: _courts.length,
+          itemBuilder: (context, index) {
+            final court = _courts[index];
+            return _buildCourtCard(context, court);
+          },
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildCourtCard(BuildContext context, Court court) {
     final textTheme = Theme.of(context).textTheme;
     final isSelected = _selectedCourtId == court.id;
 
+    // Las tarjetas ahora son semi-transparentes para integrarse con el fondo
     return Card(
-      elevation: isSelected ? 8 : 4,
+      elevation: isSelected ? 12 : 6,
       margin: const EdgeInsets.only(bottom: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       clipBehavior: Clip.antiAlias,
+      color: Colors.white.withOpacity(0.9), // Ligera transparencia
+      shadowColor: Colors.black.withOpacity(0.5),
       child: InkWell(
         onTap: () {
           setState(() {
@@ -197,12 +211,12 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
-                  Icon(Icons.location_on_outlined, color: Colors.grey[700], size: 20),
+                  Icon(Icons.location_on_outlined, color: Colors.grey[800], size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       court.address,
-                      style: textTheme.bodyLarge?.copyWith(color: Colors.grey[800]),
+                      style: textTheme.bodyLarge?.copyWith(color: Colors.grey[900]),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -222,7 +236,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
       crossFadeState: isSelected ? CrossFadeState.showSecond : CrossFadeState.showFirst,
       firstChild: Container(),
       secondChild: Container(
-        color: Colors.grey.shade100,
+        color: Colors.black.withOpacity(0.05),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Row(
@@ -230,7 +244,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
             children: [
               _actionButton(context, icon: Icons.visibility, label: 'Detalles', onTap: () => context.go('/owner-home/court-details', extra: court)),
               _actionButton(context, icon: Icons.edit, label: 'Editar', onTap: () => context.go('/owner-home/manage-court', extra: court)),
-              _actionButton(context, icon: Icons.delete, label: 'Eliminar', color: Colors.red, onTap: () => _showDeleteConfirmationDialog(court)),
+              _actionButton(context, icon: Icons.delete, label: 'Eliminar', color: Colors.red.shade400, onTap: () => _showDeleteConfirmationDialog(court)),
             ],
           ),
         ),
@@ -239,22 +253,21 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
   }
 
   Widget _actionButton(BuildContext context, {required IconData icon, required String label, Color? color, required VoidCallback onTap}) {
-    final theme = Theme.of(context);
-    final buttonColor = color ?? theme.primaryColor;
+    final buttonColor = color ?? const Color(0xFF185a9d); // Color principal de acento
     return TextButton.icon(
       onPressed: onTap,
       icon: Icon(icon, size: 20, color: buttonColor),
-      label: Text(label, style: TextStyle(color: buttonColor, fontWeight: FontWeight.w600)),
+      label: Text(label, style: TextStyle(color: buttonColor, fontWeight: FontWeight.bold)),
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: Colors.transparent,
       ),
     );
   }
 
   Drawer _buildOwnerDrawer(BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Drawer(
       child: Column(
@@ -286,6 +299,17 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
               ],
             ),
           ),
+          const Divider(thickness: 1),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: _buildDrawerItem(
+              context,
+              icon: Icons.logout,
+              text: 'Cerrar Sesión',
+              onTap: () => context.go('/'),
+              color: Colors.redAccent,
+            ),
+          ),
         ],
       ),
     );
@@ -297,7 +321,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
       padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF0056B3), Color(0xFF007BFF)],
+          colors: [Color(0xFF43cea2), Color(0xFF185a9d)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -308,7 +332,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
           const CircleAvatar(
             radius: 32,
             backgroundColor: Colors.white,
-            child: Icon(Icons.business_center, size: 40, color: Color(0xFF0056B3)),
+            child: Icon(Icons.business_center, size: 40, color: Color(0xFF185a9d)),
           ),
           const SizedBox(height: 12),
           Text(
@@ -324,28 +348,29 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context, {required IconData icon, required String text, required VoidCallback onTap, bool isSelected = false}) {
-    final theme = Theme.of(context);
+  Widget _buildDrawerItem(BuildContext context, {required IconData icon, required String text, required VoidCallback onTap, bool isSelected = false, Color? color}) {
+    final effectiveColor = color ?? (isSelected ? const Color(0xFF185a9d) : Colors.black87);
+    final iconColor = color ?? (isSelected ? const Color(0xFF185a9d) : Colors.grey[700]);
 
     return Material(
-      color: isSelected ? theme.primaryColor.withAlpha(25) : Colors.transparent,
+      color: isSelected && color == null ? const Color(0xFF185a9d).withAlpha(25) : Colors.transparent,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        splashColor: theme.primaryColor.withAlpha(51),
-        highlightColor: theme.primaryColor.withAlpha(25),
+        splashColor: (color ?? const Color(0xFF185a9d)).withAlpha(51),
+        highlightColor: (color ?? const Color(0xFF185a9d)).withAlpha(25),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: <Widget>[
-              Icon(icon, color: isSelected ? theme.primaryColor : Colors.grey[700], size: 24),
+              Icon(icon, color: iconColor, size: 24),
               const SizedBox(width: 20),
               Expanded(
                 child: Text(text, style: TextStyle(
                   fontSize: 16,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  color: isSelected ? theme.primaryColor : Colors.black87,
+                  color: effectiveColor,
                 )),
               ),
             ],

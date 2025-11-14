@@ -132,7 +132,7 @@ class _CreateCourtScreenState extends State<CreateCourtScreen> {
         subtitle: subtitle != null ? Text(subtitle, style: GoogleFonts.poppins()) : null,
         value: value,
         onChanged: onChanged,
-        activeColor: const Color(0xFF007BFF),
+        activeThumbColor: const Color(0xFF007BFF),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     );
@@ -146,7 +146,7 @@ class _CreateCourtScreenState extends State<CreateCourtScreen> {
         filled: true,
         fillColor: Colors.white,
       ),
-      value: _selectedStatus,
+      initialValue: _selectedStatus,
       hint: const Text('Selecciona un estado'),
       onChanged: (String? newValue) {
         setState(() {

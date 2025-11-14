@@ -36,20 +36,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _onItemTapped(int index) {
-    if (index == _selectedIndex) return; // No hacer nada si ya está seleccionada
+    if (index == _selectedIndex) return;
 
     setState(() {
       _selectedIndex = index;
     });
 
     switch (index) {
-      case 0: // Inicio
-        // Ya estamos aquí, pero por si acaso
+      case 0:
         break;
-      case 1: // Chats
+      case 1:
         context.go('/home/chats');
         break;
-      case 2: // Perfil
+      case 2:
         context.go('/profile');
         break;
     }
@@ -58,36 +57,40 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text('Inicio', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: Colors.white)),
-        backgroundColor: const Color(0xFF0056B3),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         foregroundColor: Colors.white,
-        elevation: 4,
-        iconTheme: const IconThemeData(color: Colors.white), 
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       drawer: _buildDrawer(context),
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue.shade50, Colors.grey.shade200],
+            colors: [Color(0xFF43cea2), Color(0xFF185a9d)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 40),
-                  _buildMainContentCard(),
-                ],
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20), // Espacio para que el AppBar no se solape
+                    _buildHeader(),
+                    const SizedBox(height: 40),
+                    _buildMainContentCard(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -103,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         const CircleAvatar(
           radius: 35,
           backgroundColor: Colors.white,
-          child: Icon(Icons.person, size: 40, color: Color(0xFF007BFF)),
+          child: Icon(Icons.person, size: 40, color: Color(0xFF185a9d)),
         ),
         const SizedBox(width: 16),
         Column(
@@ -113,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               'Bienvenido de nuevo,',
               style: GoogleFonts.poppins(
                 fontSize: 18,
-                color: Colors.black54,
+                color: Colors.white.withOpacity(0.8),
               ),
             ),
             Text(
@@ -121,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               style: GoogleFonts.poppins(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: Colors.white,
               ),
             ),
           ],
@@ -141,9 +144,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                 children: [
-                  _buildDrawerItem(context, icon: Icons.sports_soccer_outlined, text: 'Reservar Cancha', color: Colors.orange, onTap: () => context.go('/create-reservation')),
-                  _buildDrawerItem(context, icon: Icons.calendar_today_outlined, text: 'Mis Reservas', color: Colors.green, onTap: () {}),
-                  _buildDrawerItem(context, icon: Icons.history_outlined, text: 'Historial', color: Colors.purple, onTap: () {}),
+                  _buildDrawerItem(context, icon: Icons.sports_soccer_outlined, text: 'Reservar Cancha', color: const Color(0xFF185a9d), onTap: () => context.go('/create-reservation')),
+                  _buildDrawerItem(context, icon: Icons.calendar_today_outlined, text: 'Mis Reservas', color: const Color(0xFF185a9d), onTap: () {}),
+                  _buildDrawerItem(context, icon: Icons.history_outlined, text: 'Historial', color: const Color(0xFF185a9d), onTap: () {}),
                   const Divider(thickness: 1, indent: 16, endIndent: 16, height: 32),
                   _buildDrawerItem(context, icon: Icons.settings_outlined, text: 'Configuración', color: Colors.grey, onTap: () {}),
                 ],
@@ -166,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF007BFF), Color(0xFF0056B3)],
+          colors: [Color(0xFF43cea2), Color(0xFF185a9d)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -177,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           const CircleAvatar(
             radius: 32,
             backgroundColor: Colors.white,
-            child: Icon(Icons.person, size: 40, color: Color(0xFF007BFF)),
+            child: Icon(Icons.person, size: 40, color: Color(0xFF185a9d)),
           ),
           const SizedBox(height: 12),
           Text(
@@ -226,19 +229,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: Container(
+      color: Colors.white.withOpacity(0.9),
+      shadowColor: Colors.black.withOpacity(0.5),
+      child: Padding(
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: LinearGradient(
-            colors: [Colors.white, Colors.grey.shade50],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
         child: Column(
           children: [
-            Icon(Icons.event_note_outlined, size: 60, color: Colors.blue.shade300),
+            const Icon(Icons.event_note_outlined, size: 60, color: Color(0xFF185a9d)),
             const SizedBox(height: 16),
             Text(
               'No tienes próximas reservas',
@@ -262,12 +259,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ElevatedButton(
               onPressed: () => context.go('/create-reservation'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF007BFF),
+                backgroundColor: const Color(0xFF185a9d),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
                 elevation: 5,
-                shadowColor: const Color(0xFF007BFF).withAlpha(128),
+                shadowColor: const Color(0xFF185a9d).withAlpha(128),
               ),
               child: Text(
                 'Reservar una Cancha',
@@ -298,10 +295,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           label: 'Perfil',
         ),
       ],
-      selectedItemColor: const Color(0xFF007BFF),
+      backgroundColor: Colors.white, // Fondo blanco para la barra
+      selectedItemColor: const Color(0xFF185a9d),
       unselectedItemColor: Colors.grey[600],
-      showUnselectedLabels: false,
+      showUnselectedLabels: true,
       type: BottomNavigationBarType.fixed,
+      elevation: 8, // Sombra para la barra
     );
   }
 }

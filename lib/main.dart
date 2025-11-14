@@ -48,9 +48,17 @@ final GoRouter _router = GoRouter(
                   GoRoute(
                     path: ':userId',
                     builder: (BuildContext context, GoRouterState state) {
-                      final userId = state.pathParameters['userId']!;
+                      final userId = state.pathParameters['userId'];
                       final extra = state.extra as Map<String, dynamic>?;
                       final userName = extra?['userName'] as String? ?? 'Usuario';
+                      
+                      if (userId == null || userId.isEmpty) {
+                        return Scaffold(
+                          appBar: AppBar(title: const Text('Error de Navegación')),
+                          body: const Center(child: Text('El ID del chat no es válido.')),
+                        );
+                      }
+
                       return ChatScreen(otherUserName: userName);
                     },
                   ),
@@ -85,6 +93,14 @@ final GoRouter _router = GoRouter(
               path: 'manage-court',
               builder: (BuildContext context, GoRouterState state) {
                 final Court? court = state.extra as Court?;
+                if (court == null) {
+                  return Scaffold(
+                    appBar: AppBar(title: const Text('Error')),
+                    body: const Center(
+                      child: Text('No se pudo cargar la información de la cancha para editar.'),
+                    ),
+                  );
+                }
                 return ManageCourtScreen(court: court);
               },
             ),
@@ -121,7 +137,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         textTheme: GoogleFonts.poppinsTextTheme(),
-        primaryColor: const Color(0xFF007BFF),
+        primaryColor: const Color(0xFF185a9d), // Color más oscuro del degradado
       ),
       debugShowCheckedModeBanner: false,
     );
