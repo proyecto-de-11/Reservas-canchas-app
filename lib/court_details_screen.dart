@@ -69,13 +69,13 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.error, color: Colors.white, size: 50)),
             ),
-            DecoratedBox(
+            const DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
-                  stops: const [0.5, 1.0],
+                  colors: [Colors.transparent, Color.fromRGBO(0, 0, 0, 0.7)],
+                  stops: [0.5, 1.0],
                 ),
               ),
             ),
@@ -145,7 +145,7 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
         decoration: BoxDecoration(
           gradient: isAvailable
               ? LinearGradient(
-                  colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.7)],
+                  colors: [theme.primaryColor, Color.fromRGBO(theme.primaryColor.red, theme.primaryColor.green, theme.primaryColor.blue, 0.7)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
@@ -155,7 +155,7 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
           boxShadow: isAvailable
               ? [
                   BoxShadow(
-                    color: theme.primaryColor.withOpacity(0.5),
+                    color: Color.fromRGBO(theme.primaryColor.red, theme.primaryColor.green, theme.primaryColor.blue, 0.5),
                     blurRadius: 6,
                     offset: const Offset(0, 3),
                   )

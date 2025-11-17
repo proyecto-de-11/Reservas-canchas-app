@@ -117,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               'Bienvenido de nuevo,',
               style: GoogleFonts.poppins(
                 fontSize: 18,
-                color: Colors.white.withOpacity(0.8),
+                color: const Color.fromRGBO(255, 255, 255, 0.8),
               ),
             ),
             Text(
@@ -146,9 +146,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                 children: [
                   _buildDrawerItem(context, icon: Icons.sports_soccer_outlined, text: 'Reservar Cancha', color: const Color(0xFF185a9d), onTap: () => context.go('/create-reservation')),
+                  _buildDrawerItem(context, icon: Icons.bar_chart_outlined, text: 'Estadísticas del Equipo', color: const Color(0xFF185a9d), onTap: () => context.go('/home/team-stats')),
                   _buildDrawerItem(context, icon: Icons.calendar_today_outlined, text: 'Mis Reservas', color: const Color(0xFF185a9d), onTap: () {}),
                   _buildDrawerItem(context, icon: Icons.history_outlined, text: 'Historial', color: const Color(0xFF185a9d), onTap: () {}),
-                  // --- NUEVO BOTÓN DE PREFERENCIAS ---
                   _buildDrawerItem(context, icon: Icons.favorite_border_outlined, text: 'Preferencias', color: const Color(0xFF185a9d), onTap: () => context.go('/profile/preferences')),
                   const Divider(thickness: 1, indent: 16, endIndent: 16, height: 32),
                   _buildDrawerItem(context, icon: Icons.settings_outlined, text: 'Configuración', color: Colors.grey, onTap: () {}),
@@ -232,8 +232,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      color: Colors.white.withOpacity(0.9),
-      shadowColor: Colors.black.withOpacity(0.5),
+      color: const Color.fromRGBO(255, 255, 255, 0.9),
+      shadowColor: const Color.fromRGBO(0, 0, 0, 0.5),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(

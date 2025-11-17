@@ -45,53 +45,61 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    // --- INICIO DE LA CORRECCIÓN ---
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF43cea2), Color(0xFF185a9d)],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-                  _buildHeader(),
-                  const SizedBox(height: 50),
-                  _buildTextField(
-                    focusNode: _emailFocusNode,
-                    icon: Icons.alternate_email,
-                    hint: 'Usuario / Correo',
-                  ),
-                  const SizedBox(height: 20),
-                  _buildTextField(
-                    focusNode: _passwordFocusNode,
-                    icon: Icons.lock_outline,
-                    hint: 'Contraseña',
-                    isPassword: true,
-                  ),
-                  const SizedBox(height: 40),
-                  _buildLoginButton(),
-                  const SizedBox(height: 16),
-                  _buildOwnerLoginButton(),
-                  const SizedBox(height: 30),
-                  _buildRegisterLink(),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                ],
+      body: Stack(
+        children: [
+          // Capa 1: Fondo Degradado que ocupa toda la pantalla
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF43cea2), Color(0xFF185a9d)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
             ),
           ),
-        ),
+          // Capa 2: Contenido del formulario
+          SafeArea(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.08),
+                    _buildHeader(),
+                    const SizedBox(height: 50),
+                    _buildTextField(
+                      focusNode: _emailFocusNode,
+                      icon: Icons.alternate_email,
+                      hint: 'Usuario / Correo',
+                    ),
+                    const SizedBox(height: 20),
+                    _buildTextField(
+                      focusNode: _passwordFocusNode,
+                      icon: Icons.lock_outline,
+                      hint: 'Contraseña',
+                      isPassword: true,
+                    ),
+                    const SizedBox(height: 40),
+                    _buildLoginButton(),
+                    const SizedBox(height: 16),
+                    _buildOwnerLoginButton(),
+                    const SizedBox(height: 30),
+                    _buildRegisterLink(),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
+    // --- FIN DE LA CORRECCIÓN ---
   }
 
   Widget _buildHeader() {
@@ -101,8 +109,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           Icons.sports_soccer,
           size: 80,
           color: Colors.white.withAlpha(230),
-          shadows: [BoxShadow(color: Colors.black.withAlpha(51), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
+          shadows: [BoxShadow(color: Colors.black.withAlpha(51), blurRadius: 10, offset: const Offset(0, 4))]),
         const SizedBox(height: 16),
         Text(
           'Bienvenido',
@@ -111,8 +118,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             fontWeight: FontWeight.bold,
             color: Colors.white,
             letterSpacing: 2,
-            shadows: [Shadow(color: Colors.black.withAlpha(64), blurRadius: 8, offset: const Offset(0, 4))],
-          ),
+            shadows: [Shadow(color: Colors.black.withAlpha(64), blurRadius: 8, offset: const Offset(0, 4))]),
         ),
       ],
     );

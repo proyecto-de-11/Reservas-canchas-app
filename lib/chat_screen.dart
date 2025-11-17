@@ -101,7 +101,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: const Color.fromRGBO(0, 0, 0, 0.1),
               blurRadius: 5,
               offset: const Offset(0, 2),
             )
@@ -124,7 +124,7 @@ class _ChatScreenState extends State<ChatScreen> {
           BoxShadow(
             offset: const Offset(0, -2),
             blurRadius: 5,
-            color: Colors.black.withOpacity(0.05),
+            color: const Color.fromRGBO(0, 0, 0, 0.05),
           ),
         ],
       ),

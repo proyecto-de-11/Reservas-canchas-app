@@ -14,6 +14,7 @@ import 'create_court_screen.dart';
 import 'chat_list_screen.dart';
 import 'chat_screen.dart';
 import 'sports_preferences_screen.dart';
+import 'team_stats_screen.dart';
 
 void main() async {
   await initializeDateFormatting('es_ES', null);
@@ -35,37 +36,43 @@ final GoRouter _router = GoRouter(
           },
         ),
         GoRoute(
-            path: 'home',
-            builder: (BuildContext context, GoRouterState state) {
-              return const HomeScreen();
-            },
-            routes: <RouteBase>[
-              GoRoute(
-                path: 'chats',
-                builder: (BuildContext context, GoRouterState state) {
-                  return const ChatListScreen();
-                },
-                routes: <RouteBase>[
-                  GoRoute(
-                    path: ':userId',
-                    builder: (BuildContext context, GoRouterState state) {
-                      // --- INICIO DE LA CORRECCIÓN ---
-                      final userId = state.pathParameters['userId'];
-                      if (userId == null || userId.isEmpty) {
-                        return Scaffold(
-                          appBar: AppBar(title: const Text('Error de Navegación')),
-                          body: const Center(child: Text('El ID del chat no es válido.')),
-                        );
-                      }
-                      // --- FIN DE LA CORRECCIÓN ---
-                      final extra = state.extra as Map<String, dynamic>?;
-                      final userName = extra?['userName'] as String? ?? 'Usuario';
-                      return ChatScreen(otherUserName: userName);
-                    },
-                  ),
-                ],
-              ),
-            ]),
+          path: 'home',
+          builder: (BuildContext context, GoRouterState state) {
+            return const HomeScreen();
+          },
+          routes: <RouteBase>[
+            GoRoute(
+              path: 'chats',
+              builder: (BuildContext context, GoRouterState state) {
+                return const ChatListScreen();
+              },
+              routes: <RouteBase>[
+                GoRoute(
+                  path: ':userId',
+                  builder: (BuildContext context, GoRouterState state) {
+                    final userId = state.pathParameters['userId'];
+                    if (userId == null || userId.isEmpty) {
+                      return Scaffold(
+                        appBar: AppBar(title: const Text('Error de Navegación')),
+                        body: const Center(child: Text('El ID del chat no es válido.')),
+                      );
+                    }
+                    final extra = state.extra as Map<String, dynamic>?;
+                    final userName = extra?['userName'] as String? ?? 'Usuario';
+                    return ChatScreen(otherUserName: userName);
+                  },
+                ),
+              ],
+            ),
+            // --- RUTA MOVIDA AQUÍ ---
+            GoRoute(
+              path: 'team-stats',
+              builder: (BuildContext context, GoRouterState state) {
+                return const TeamStatsScreen();
+              },
+            ),
+          ],
+        ),
         GoRoute(
           path: 'create-reservation',
           builder: (BuildContext context, GoRouterState state) {
