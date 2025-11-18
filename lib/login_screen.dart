@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myapp/services/api_service.dart'; // Importa el servicio
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,7 +11,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _apiService = ApiService();
+
   bool _obscureText = true;
+  bool _isLoading = false; // Estado para el indicador de carga
 
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -40,16 +47,60 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     _controller.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    // Oculta el teclado
+    FocusScope.of(context).unfocus();
+
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() => _isLoading = true);
+
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+
+      try {
+        final loginResponse = await _apiService.login(email, password);
+
+        if (mounted) { // Verifica si el widget todavía está en el árbol
+          if (loginResponse != null) {
+            // TODO: Guardar el token y el ID de usuario de forma segura
+            // Por ahora, navegamos directamente a home
+            context.go('/home');
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Error: Credenciales inválidas o problema del servidor.'),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error inesperado: $e'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // --- INICIO DE LA CORRECCIÓN ---
     return Scaffold(
       body: Stack(
         children: [
-          // Capa 1: Fondo Degradado que ocupa toda la pantalla
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -59,81 +110,94 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               ),
             ),
           ),
-          // Capa 2: Contenido del formulario
           SafeArea(
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.08),
-                    _buildHeader(),
-                    const SizedBox(height: 50),
-                    _buildTextField(
-                      focusNode: _emailFocusNode,
-                      icon: Icons.alternate_email,
-                      hint: 'Usuario / Correo',
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      focusNode: _passwordFocusNode,
-                      icon: Icons.lock_outline,
-                      hint: 'Contraseña',
-                      isPassword: true,
-                    ),
-                    const SizedBox(height: 40),
-                    _buildLoginButton(),
-                    const SizedBox(height: 16),
-                    _buildOwnerLoginButton(),
-                    const SizedBox(height: 30),
-                    _buildRegisterLink(),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                  ],
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.08),
+                      _buildHeader(),
+                      const SizedBox(height: 50),
+                      _buildTextField(
+                        controller: _emailController,
+                        focusNode: _emailFocusNode,
+                        icon: Icons.alternate_email,
+                        hint: 'Usuario / Correo',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return 'Por favor, ingrese su correo.';
+                          if (!value.contains('@')) return 'Ingrese un correo válido.';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      _buildTextField(
+                        controller: _passwordController,
+                        focusNode: _passwordFocusNode,
+                        icon: Icons.lock_outline,
+                        hint: 'Contraseña',
+                        isPassword: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return 'Por favor, ingrese su contraseña.';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 40),
+                      _buildLoginButton(),
+                      const SizedBox(height: 16),
+                      _buildOwnerLoginButton(),
+                      const SizedBox(height: 30),
+                      _buildRegisterLink(),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
+          // Indicador de carga superpuesto
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+              ),
+            ),
         ],
       ),
     );
-    // --- FIN DE LA CORRECCIÓN ---
   }
 
   Widget _buildHeader() {
+    // ... (sin cambios)
     return Column(
       children: [
-        Icon(
-          Icons.sports_soccer,
-          size: 80,
-          color: Colors.white.withAlpha(230),
-          shadows: [BoxShadow(color: Colors.black.withAlpha(51), blurRadius: 10, offset: const Offset(0, 4))]),
+        Icon(Icons.sports_soccer, size: 80, color: Colors.white.withAlpha(230), shadows: [BoxShadow(color: Colors.black.withAlpha(51), blurRadius: 10, offset: const Offset(0, 4))]),
         const SizedBox(height: 16),
-        Text(
-          'Bienvenido',
-          style: GoogleFonts.poppins(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 2,
-            shadows: [Shadow(color: Colors.black.withAlpha(64), blurRadius: 8, offset: const Offset(0, 4))]),
-        ),
+        Text('Bienvenido', style: GoogleFonts.poppins(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 2, shadows: [Shadow(color: Colors.black.withAlpha(64), blurRadius: 8, offset: const Offset(0, 4))])),
       ],
     );
   }
 
   Widget _buildTextField({
+    required TextEditingController controller,
     required FocusNode focusNode,
     required IconData icon,
     required String hint,
     bool isPassword = false,
+    String? Function(String?)? validator,
   }) {
     final bool hasFocus = focusNode.hasFocus;
-    return TextField(
+    return TextFormField(
+      controller: controller,
       focusNode: focusNode,
       obscureText: isPassword ? _obscureText : false,
+      validator: validator,
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.poppins(color: Colors.white70),
@@ -147,14 +211,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         filled: true,
         fillColor: Colors.white.withOpacity(0.15),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.white, width: 1.5),
-        ),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.3))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white, width: 1.5)),
+        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
+        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.redAccent, width: 2)),
+        errorStyle: GoogleFonts.poppins(color: Colors.redAccent, fontWeight: FontWeight.w500),
       ),
       style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
     );
@@ -162,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   Widget _buildLoginButton() {
     return ElevatedButton(
-      onPressed: () => context.go('/home'),
+      onPressed: _isLoading ? null : _login,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF185a9d),
@@ -178,6 +239,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildOwnerLoginButton() {
+    // ... (sin cambios)
     return OutlinedButton.icon(
       onPressed: () => context.go('/owner-home'),
       icon: const Icon(Icons.business_center_outlined),
@@ -193,19 +255,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildRegisterLink() {
+    // ... (sin cambios)
     return GestureDetector(
       onTap: () => context.go('/register'),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            "¿No tienes una cuenta? ",
-            style: GoogleFonts.poppins(color: Colors.white70),
-          ),
-          Text(
-            'Regístrate',
-            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
+          Text("¿No tienes una cuenta? ", style: GoogleFonts.poppins(color: Colors.white70)),
+          Text('Regístrate', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
         ],
       ),
     );

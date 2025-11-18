@@ -1,10 +1,26 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myapp/models/user_profile.dart';
+import 'package:myapp/services/api_service.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final ApiService _apiService = ApiService();
+  Future<UserProfile?>? _userProfileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // Asumimos un ID de usuario fijo por ahora. Esto se reemplazará con el ID del usuario autenticado.
+    _userProfileFuture = _apiService.getUserProfile('1');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,23 +39,44 @@ class ProfileScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: 80), // Space for the FAB
-          children: [
-            _buildProfileHeader(context),
-            const SizedBox(height: 20),
-            _buildPersonalInfoCard(),
-            const SizedBox(height: 20),
-            _buildContactInfoCard(),
-            const SizedBox(height: 20),
-            _buildBiographyCard(),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: _buildLogoutButton(context),
-            ),
-            const SizedBox(height: 20),
-          ],
+        child: FutureBuilder<UserProfile?>(
+          future: _userProfileFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+              return const Center(
+                child: Text(
+                  'No se pudo cargar el perfil del usuario.',
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                ),
+              );
+            }
+
+            final userProfile = snapshot.data!;
+
+            return ListView(
+              padding: const EdgeInsets.only(bottom: 80), // Space for the FAB
+              children: [
+                _buildProfileHeader(context, userProfile),
+                const SizedBox(height: 20),
+                _buildPersonalInfoCard(userProfile),
+                const SizedBox(height: 20),
+                _buildContactInfoCard(userProfile),
+                const SizedBox(height: 20),
+                if (userProfile.bio != null && userProfile.bio!.isNotEmpty)
+                  _buildBiographyCard(userProfile.bio!),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: _buildLogoutButton(context),
+                ),
+                const SizedBox(height: 20),
+              ],
+            );
+          },
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -52,7 +89,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context) {
+  Widget _buildProfileHeader(BuildContext context, UserProfile profile) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
       decoration: const BoxDecoration(
@@ -68,17 +105,19 @@ class ProfileScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Stack(
+          Stack(
             children: [
               CircleAvatar(
                 radius: 55,
                 backgroundColor: Colors.white,
                 child: CircleAvatar(
                   radius: 52,
-                  backgroundImage: NetworkImage('https://picsum.photos/200'), // Placeholder image
+                  backgroundImage: (profile.profilePictureUrl != null && profile.profilePictureUrl!.isNotEmpty)
+                      ? NetworkImage(profile.profilePictureUrl!)
+                      : const NetworkImage('https://picsum.photos/200'), // Placeholder
                 ),
               ),
-              Positioned(
+              const Positioned(
                 bottom: 0,
                 right: 0,
                 child: CircleAvatar(
@@ -91,7 +130,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Juan Pérez González', // Placeholder Name
+            profile.fullName,
             style: GoogleFonts.poppins(
               color: Colors.white,
               fontSize: 22,
@@ -99,7 +138,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           Text(
-            'juan.perez@email.com',
+            profile.email,
             style: GoogleFonts.poppins(
               color: Colors.white70,
               fontSize: 16,
@@ -149,35 +188,35 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPersonalInfoCard() {
+  Widget _buildPersonalInfoCard(UserProfile profile) {
     return _buildSectionCard(
       title: 'Información Personal',
       children: [
-        _buildDetailRow(icon: Icons.person_outline, label: 'Nombre', value: 'Juan Pérez González'),
-        _buildDetailRow(icon: Icons.badge_outlined, label: 'Documento', value: '12.345.678-9'),
-        _buildDetailRow(icon: Icons.cake_outlined, label: 'Nacimiento', value: '01 de Enero, 1990'),
-        _buildDetailRow(icon: Icons.wc_outlined, label: 'Género', value: 'Masculino'),
+        _buildDetailRow(icon: Icons.person_outline, label: 'Nombre', value: profile.fullName),
+        _buildDetailRow(icon: Icons.badge_outlined, label: 'Documento', value: 'No disponible'), // Placeholder
+        _buildDetailRow(icon: Icons.cake_outlined, label: 'Nacimiento', value: 'No disponible'), // Placeholder
+        _buildDetailRow(icon: Icons.wc_outlined, label: 'Género', value: 'No disponible'), // Placeholder
       ],
     );
   }
 
-  Widget _buildContactInfoCard() {
+  Widget _buildContactInfoCard(UserProfile profile) {
     return _buildSectionCard(
       title: 'Información de Contacto',
       children: [
-        _buildDetailRow(icon: Icons.phone_outlined, label: 'Teléfono', value: '+56 9 1234 5678'),
-        _buildDetailRow(icon: Icons.location_city_outlined, label: 'Ciudad', value: 'Santiago'),
-        _buildDetailRow(icon: Icons.public_outlined, label: 'País', value: 'Chile'),
+        _buildDetailRow(icon: Icons.phone_outlined, label: 'Teléfono', value: 'No disponible'), // Placeholder
+        _buildDetailRow(icon: Icons.location_city_outlined, label: 'Ciudad', value: profile.city ?? 'No especificada'),
+        _buildDetailRow(icon: Icons.public_outlined, label: 'País', value: profile.country ?? 'No especificado'),
       ],
     );
   }
 
-  Widget _buildBiographyCard() {
+  Widget _buildBiographyCard(String bio) {
     return _buildSectionCard(
       title: 'Biografía',
       children: [
         Text(
-          'Apasionado por el fútbol y el desarrollo de software. Me encanta competir y mejorar mi juego cada día. Busco rivales para partidos amistosos los fines de semana.',
+          bio,
           style: GoogleFonts.poppins(fontSize: 14, height: 1.5),
         ),
       ],

@@ -99,11 +99,11 @@ class _ChatScreenState extends State<ChatScreen> {
             bottomLeft: isMyMessage ? const Radius.circular(20) : Radius.zero,
             bottomRight: isMyMessage ? Radius.zero : const Radius.circular(20),
           ),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
-              color: const Color.fromRGBO(0, 0, 0, 0.1),
+              color: Color.fromRGBO(0, 0, 0, 0.1),
               blurRadius: 5,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
             )
           ]
         ),
@@ -120,11 +120,11 @@ class _ChatScreenState extends State<ChatScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            offset: const Offset(0, -2),
+            offset: Offset(0, -2),
             blurRadius: 5,
-            color: const Color.fromRGBO(0, 0, 0, 0.05),
+            color: Color.fromRGBO(0, 0, 0, 0.05),
           ),
         ],
       ),
