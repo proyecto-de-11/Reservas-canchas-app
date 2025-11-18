@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:myapp/services/api_service.dart'; // Importa el servicio
+import 'package:myapp/services/auth_service.dart'; // CAMBIO: Importa el servicio correcto
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,10 +14,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _apiService = ApiService();
+  final _authService = AuthService(); // CAMBIO: Usa el servicio de autenticación
 
   bool _obscureText = true;
-  bool _isLoading = false; // Estado para el indicador de carga
+  bool _isLoading = false;
 
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -32,11 +32,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
     );
-
     _controller.forward();
     _emailFocusNode.addListener(() => setState(() {}));
     _passwordFocusNode.addListener(() => setState(() {}));
@@ -53,7 +51,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Future<void> _login() async {
-    // Oculta el teclado
     FocusScope.of(context).unfocus();
 
     if (_formKey.currentState?.validate() ?? false) {
@@ -63,12 +60,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       final password = _passwordController.text.trim();
 
       try {
-        final loginResponse = await _apiService.login(email, password);
+        // CAMBIO: Llama al método login del AuthService
+        final success = await _authService.login(email, password);
 
-        if (mounted) { // Verifica si el widget todavía está en el árbol
-          if (loginResponse != null) {
+        if (mounted) {
+          if (success) {
             // TODO: Guardar el token y el ID de usuario de forma segura
-            // Por ahora, navegamos directamente a home
             context.go('/home');
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -96,6 +93,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     }
   }
 
+  // ... (El resto del archivo build y los widgets auxiliares permanecen sin cambios)
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,7 +158,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               ),
             ),
           ),
-          // Indicador de carga superpuesto
           if (_isLoading)
             Container(
               color: Colors.black.withOpacity(0.5),
@@ -174,7 +171,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildHeader() {
-    // ... (sin cambios)
     return Column(
       children: [
         Icon(Icons.sports_soccer, size: 80, color: Colors.white.withAlpha(230), shadows: [BoxShadow(color: Colors.black.withAlpha(51), blurRadius: 10, offset: const Offset(0, 4))]),
@@ -239,7 +235,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildOwnerLoginButton() {
-    // ... (sin cambios)
     return OutlinedButton.icon(
       onPressed: () => context.go('/owner-home'),
       icon: const Icon(Icons.business_center_outlined),
@@ -255,7 +250,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildRegisterLink() {
-    // ... (sin cambios)
     return GestureDetector(
       onTap: () => context.go('/register'),
       child: Row(
@@ -268,3 +262,4 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 }
+

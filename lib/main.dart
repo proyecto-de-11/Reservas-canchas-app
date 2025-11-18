@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:myapp/court_details_screen.dart';
+import 'court_details_screen.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
@@ -15,6 +15,7 @@ import 'chat_list_screen.dart';
 import 'chat_screen.dart';
 import 'sports_preferences_screen.dart';
 import 'team_stats_screen.dart';
+import 'models/court_model.dart'; // Importación añadida y consistente
 
 void main() async {
   await initializeDateFormatting('es_ES', null);
@@ -64,7 +65,6 @@ final GoRouter _router = GoRouter(
                 ),
               ],
             ),
-            // --- RUTA MOVIDA AQUÍ ---
             GoRoute(
               path: 'team-stats',
               builder: (BuildContext context, GoRouterState state) {

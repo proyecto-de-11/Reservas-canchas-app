@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myapp/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -10,13 +11,20 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
+  final AuthService _authService = AuthService();
+
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _estaActivo = true;
+  int _idRol = 2;
 
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
 
-  final _nameFocusNode = FocusNode();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
   final _confirmPasswordFocusNode = FocusNode();
@@ -34,7 +42,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     );
 
     _controller.forward();
-    _nameFocusNode.addListener(() => setState(() {}));
     _emailFocusNode.addListener(() => setState(() {}));
     _passwordFocusNode.addListener(() => setState(() {}));
     _confirmPasswordFocusNode.addListener(() => setState(() {}));
@@ -43,20 +50,44 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   @override
   void dispose() {
     _controller.dispose();
-    _nameFocusNode.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
     _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 
+  void _register() async {
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Las contraseñas no coinciden.')),
+      );
+      return;
+    }
+
+    bool success = await _authService.register(
+      _emailController.text,
+      _passwordController.text,
+      _idRol,
+      _estaActivo,
+    );
+
+    if (success) {
+      context.go('/home');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error en el registro. Inténtalo de nuevo.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // --- INICIO DE LA CORRECCIÓN ---
     return Scaffold(
       body: Stack(
         children: [
-          // Capa 1: Fondo Degradado que ocupa toda la pantalla
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -66,7 +97,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
               ),
             ),
           ),
-          // Capa 2: Contenido del formulario
           SafeArea(
             child: FadeTransition(
               opacity: _fadeAnimation,
@@ -80,18 +110,14 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     _buildHeader(),
                     const SizedBox(height: 40),
                     _buildTextField(
-                      focusNode: _nameFocusNode,
-                      icon: Icons.person_outline,
-                      hint: 'Nombre Completo',
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
+                      controller: _emailController,
                       focusNode: _emailFocusNode,
                       icon: Icons.alternate_email,
                       hint: 'Correo Electrónico',
                     ),
                     const SizedBox(height: 20),
                     _buildTextField(
+                      controller: _passwordController,
                       focusNode: _passwordFocusNode,
                       icon: Icons.lock_outline,
                       hint: 'Contraseña',
@@ -101,6 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     ),
                     const SizedBox(height: 20),
                     _buildTextField(
+                      controller: _confirmPasswordController,
                       focusNode: _confirmPasswordFocusNode,
                       icon: Icons.lock_outline,
                       hint: 'Confirmar Contraseña',
@@ -108,6 +135,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                       obscureText: _obscureConfirmPassword,
                       toggleObscure: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                     ),
+                    const SizedBox(height: 20),
+                    _buildRoleDropdown(),
+                    const SizedBox(height: 20),
+                    _buildStatusSwitch(),
                     const SizedBox(height: 40),
                     _buildRegisterButton(),
                     const SizedBox(height: 30),
@@ -121,10 +152,9 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         ],
       ),
     );
-    // --- FIN DE LA CORRECCIÓN ---
   }
 
-   Widget _buildHeader() {
+  Widget _buildHeader() {
     return Column(
       children: [
         Icon(
@@ -147,6 +177,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   Widget _buildTextField({
+    required TextEditingController controller,
     required FocusNode focusNode,
     required IconData icon,
     required String hint,
@@ -156,6 +187,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }) {
     final bool hasFocus = focusNode.hasFocus;
     return TextField(
+      controller: controller,
       focusNode: focusNode,
       obscureText: obscureText,
       decoration: InputDecoration(
@@ -184,9 +216,57 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     );
   }
 
+  Widget _buildRoleDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: _idRol,
+          isExpanded: true,
+          icon: const Icon(Icons.arrow_downward, color: Colors.white70),
+          dropdownColor: const Color(0xFF185a9d),
+          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
+          items: const [
+            DropdownMenuItem(value: 1, child: Text('Administrador')),
+            DropdownMenuItem(value: 2, child: Text('Jugador')),
+          ],
+          onChanged: (int? newValue) {
+            setState(() {
+              _idRol = newValue!;
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusSwitch() {
+    return SwitchListTile(
+      title: Text(
+        'Cuenta Activa',
+        style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
+      ),
+      value: _estaActivo,
+      onChanged: (bool value) {
+        setState(() {
+          _estaActivo = value;
+        });
+      },
+      activeColor: Colors.white,
+      activeTrackColor: const Color(0xFF43cea2),
+      inactiveThumbColor: Colors.white70,
+      inactiveTrackColor: Colors.white.withOpacity(0.3),
+    );
+  }
+
   Widget _buildRegisterButton() {
     return ElevatedButton(
-      onPressed: () => context.go('/home'), // Navegación directa
+      onPressed: _register,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF185a9d),
@@ -203,7 +283,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
   Widget _buildLoginLink() {
     return GestureDetector(
-      onTap: () => context.go('/'), // Navegación directa
+      onTap: () => context.go('/'),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

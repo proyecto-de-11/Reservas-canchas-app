@@ -1,23 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-// --- Data Model (Sin cambios) ---
-class Court {
-  final String id;
-  final String name;
-  final String address;
-  final double price;
-  final String imageUrl;
-
-  Court({
-    required this.id,
-    required this.name,
-    required this.address,
-    required this.price,
-    required this.imageUrl,
-  });
-}
+import 'package:myapp/models/court_model.dart';
 
 // --- Screen ---
 class OwnerHomeScreen extends StatefulWidget {
@@ -38,23 +22,20 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
       Court(
         id: '1',
         name: 'Cancha Central (Fútbol 7)',
-        address: 'Av. Siempreviva 742, Springfield',
-        price: 55.00,
-        imageUrl: 'https://picsum.photos/seed/futbol/800/600',
+        location: 'Av. Siempreviva 742, Springfield',
+        description: 'Descripción de la cancha de fútbol 7'
       ),
       Court(
         id: '2',
         name: 'Pista de Tenis B',
-        address: 'Calle Falsa 123, Shelbyville',
-        price: 30.50,
-        imageUrl: 'https://picsum.photos/seed/tenis/800/600',
+        location: 'Calle Falsa 123, Shelbyville',
+        description: 'Descripción de la pista de tenis B'
       ),
       Court(
         id: '3',
         name: 'Pabellón Multiusos Interior',
-        address: 'Blvd. de los Sueños Rotos 45',
-        price: 40.00,
-        imageUrl: 'https://picsum.photos/seed/basket/800/600',
+        location: 'Blvd. de los Sueños Rotos 45',
+        description: 'Descripción del pabellón multiusos'
       ),
     ];
   }
@@ -163,7 +144,7 @@ Widget build(BuildContext context) {
             Stack(
               children: [
                 Image.network(
-                  court.imageUrl,
+                  'https://picsum.photos/seed/futbol/800/600',
                   height: 220,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -198,10 +179,6 @@ Widget build(BuildContext context) {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        '\$${court.price.toStringAsFixed(2)} / hora',
-                        style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 16),
-                      ),
                     ],
                   ),
                 ),
@@ -215,7 +192,7 @@ Widget build(BuildContext context) {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      court.address,
+                      court.location,
                       style: textTheme.bodyLarge?.copyWith(color: Colors.grey[900]),
                       overflow: TextOverflow.ellipsis,
                     ),
