@@ -1,8 +1,8 @@
-# Blueprint: Aplicación con Autenticación y Pantallas Funcionales
+# Blueprint: Aplicación con Autenticación y Pantallas Funcionales para Jugadores
 
 ## Descripción General
 
-Crear una aplicación Flutter con un flujo de autenticación completo, una `HomeScreen` elegante, un formulario detallado para `Crear Reservas` y una pantalla de `Perfil de Usuario` rica en información. La navegación se gestiona con `go_router`.
+Crear una aplicación Flutter enfocada en jugadores, con un flujo de autenticación completo, una `HomeScreen` elegante, un formulario detallado para `Crear Reservas` y una pantalla de `Perfil de Usuario` rica en información. La navegación se gestiona con `go_router`.
 
 ## Estilo y Diseño
 
@@ -21,17 +21,14 @@ Crear una aplicación Flutter con un flujo de autenticación completo, una `Home
 - **Ruta:** `/`
 - **Diseño:** Formulario de inicio de sesión simplificado.
 - **Integración con API:** La función `login` en `auth_service.dart` consume el endpoint de la API de login (`/api/auth/login`).
-- **Cambios Recientes:** Se eliminó el botón "Soy Propietario" para enfocar el flujo en el usuario general.
 
 ### 2. Pantalla de Registro (`register_screen.dart`)
 
 - **Ruta:** `/register`
 - **Diseño:** Formulario de registro simplificado.
-- **Cambios Recientes:**
-    - Se eliminó el campo "Confirmar Contraseña" para agilizar el proceso.
+- **Lógica:**
     - El rol del nuevo usuario se asigna automáticamente como "Jugador" por defecto.
     - El estado de la cuenta se establece como "Activada" por defecto.
-    - Los campos de rol y estado ya no son visibles en la interfaz de usuario.
 
 ### 3. Pantalla de Inicio (`home_screen.dart`)
 
@@ -78,10 +75,8 @@ La navegación es manejada por `go_router`. Las rutas configuradas son:
 1.  **Flujo de Autenticación y `HomeScreen`:** Implementación inicial.
 2.  **Formulario de Reserva:** Construcción y corrección de errores.
 3.  **Pantalla de Perfil (Versión 1):** Creación inicial y conexión de la ruta.
-4.  **Rediseño Detallado de la Pantalla de Perfil:**
-    - Se reestructuró `profile_screen.dart` para incluir toda la información solicitada, organizada en tarjetas lógicas y con un diseño más rico.
-    - Se añadió un `FloatingActionButton` para futuras funcionalidades de edición.
-5.  **Simplificación del Registro:** Se modificó `register_screen.dart` para eliminar campos y establecer valores por defecto, agilizando la creación de cuentas.
+4.  **Rediseño Detallado de la Pantalla de Perfil:** Se reestructuró `profile_screen.dart` para incluir toda la información solicitada y un diseño más rico.
+5.  **Simplificación del Registro:** Se modificó `register_screen.dart` para agilizar la creación de cuentas.
 6.  **Ajuste del Servicio de Login:** Se corrigió `auth_service.dart` para que la función de login envíe los campos correctos a la API.
-7.  **Limpieza de la Pantalla de Login:** Se eliminó el botón "Soy Propietario" de `login_screen.dart`.
+7.  **Eliminación de Flujo de Propietario:** Se eliminaron todas las pantallas y rutas relacionadas con la funcionalidad de propietario (`OwnerHomeScreen`, `ManageCourtScreen`, `CreateCourtScreen`) para enfocar la aplicación exclusivamente en los usuarios (jugadores).
 8.  **Actualización de Blueprint:** Se documentaron todos los cambios realizados.

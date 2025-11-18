@@ -2,20 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'court_details_screen.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
 import 'create_reservation_screen.dart';
 import 'profile_screen.dart';
-import 'owner_home_screen.dart';
-import 'manage_court_screen.dart';
-import 'create_court_screen.dart';
 import 'chat_list_screen.dart';
 import 'chat_screen.dart';
 import 'sports_preferences_screen.dart';
 import 'team_stats_screen.dart';
-import 'models/court_model.dart'; // Importación añadida y consistente
 
 void main() async {
   await initializeDateFormatting('es_ES', null);
@@ -89,50 +84,6 @@ final GoRouter _router = GoRouter(
               path: 'preferences',
               builder: (BuildContext context, GoRouterState state) {
                 return const SportsPreferencesScreen();
-              },
-            ),
-          ],
-        ),
-        GoRoute(
-          path: 'owner-home',
-          builder: (BuildContext context, GoRouterState state) {
-            return const OwnerHomeScreen();
-          },
-          routes: <RouteBase>[
-            GoRoute(
-              path: 'create-court',
-              builder: (BuildContext context, GoRouterState state) {
-                return const CreateCourtScreen();
-              },
-            ),
-            GoRoute(
-              path: 'manage-court',
-              builder: (BuildContext context, GoRouterState state) {
-                final Court? court = state.extra as Court?;
-                if (court == null) {
-                  return Scaffold(
-                    appBar: AppBar(title: const Text('Error')),
-                    body: const Center(
-                      child: Text('No se pudo cargar la información de la cancha para editar.'),
-                    ),
-                  );
-                }
-                return ManageCourtScreen(court: court);
-              },
-            ),
-            GoRoute(
-              path: 'court-details',
-              builder: (BuildContext context, GoRouterState state) {
-                final Court? court = state.extra as Court?;
-                if (court == null) {
-                  return Scaffold(
-                    appBar: AppBar(title: const Text('Error')),
-                    body: const Center(
-                      child: Text('No se pudo cargar la información de la cancha.'),
-                    ),
-                  );
-                }
-                return CourtDetailsScreen(court: court);
               },
             ),
           ],
