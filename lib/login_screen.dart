@@ -60,15 +60,28 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       final password = _passwordController.text.trim();
 
       try {
-        final success = await _authService.login(email, password);
+        final result = await _authService.login(email, password);
 
         if (mounted) {
-          if (success) {
-            context.go('/home');
+          if (result['success']) {
+            final role = result['role'];
+            if (role == 2) {
+              // Rol 2 es Jugador, permitir acceso
+              context.go('/home');
+            } else {
+              // Roles 1 (Propietario) y 3 (Admin) no tienen acceso
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Acceso denegado. Esta aplicación es solo para jugadores.'),
+                  backgroundColor: Colors.orangeAccent,
+                ),
+              );
+            }
           } else {
+            // Falla el login (credenciales, etc.)
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Error: Credenciales inválidas o problema del servidor.'),
+              SnackBar(
+                content: Text(result['message'] ?? 'Error al iniciar sesión.'),
                 backgroundColor: Colors.redAccent,
               ),
             );
@@ -144,7 +157,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       ),
                       const SizedBox(height: 40),
                       _buildLoginButton(),
-                      // El botón de propietario ha sido eliminado
                       const SizedBox(height: 30),
                       _buildRegisterLink(),
                       SizedBox(height: MediaQuery.of(context).size.height * 0.05),
