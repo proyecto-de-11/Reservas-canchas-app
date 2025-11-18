@@ -20,6 +20,7 @@ Crear una aplicación Flutter con un flujo de autenticación completo, una `Home
 
 - **Ruta:** `/`
 - **Diseño:** Formulario de inicio de sesión.
+- **Integración con API:** La función `login` en `auth_service.dart` se ha ajustado para consumir el endpoint de la API de login (`/api/auth/login`) y enviar los campos `email` y `password` correctamente.
 
 ### 2. Pantalla de Registro (`register_screen.dart`)
 
@@ -80,4 +81,5 @@ La navegación es manejada por `go_router`. Las rutas configuradas son:
     - Se reestructuró `profile_screen.dart` para incluir toda la información solicitada, organizada en tarjetas lógicas y con un diseño más rico.
     - Se añadió un `FloatingActionButton` para futuras funcionalidades de edición.
 5.  **Simplificación del Registro:** Se modificó `register_screen.dart` para eliminar campos y establecer valores por defecto, agilizando la creación de cuentas.
-6.  **Actualización de Blueprint:** Se documentaron todos los cambios realizados.
+6.  **Ajuste del Servicio de Login:** Se corrigió `auth_service.dart` para que la función de login envíe los campos correctos a la API.
+7.  **Actualización de Blueprint:** Se documentaron todos los cambios realizados.

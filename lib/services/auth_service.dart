@@ -4,9 +4,9 @@ import 'package:http/http.dart' as http;
 class AuthService {
   final String _baseUrl = 'https://fictional-capybara-r4wq95jwj95xh59xv-8080.app.github.dev/api';
 
-  // Función para REGISTRAR un nuevo usuario
+  // Función para REGISTRAR un nuevo usuario (No se modifica)
   Future<bool> register(String email, String password, int idRol, bool estaActivo) async {
-    final String url = '$_baseUrl/auth/registrar'; // <-- CORREGIDO: Endpoint de registro
+    final String url = '$_baseUrl/auth/registrar';
 
     try {
       final response = await http.post(
@@ -33,9 +33,9 @@ class AuthService {
     }
   }
 
-  // Función para INICIAR SESIÓN
+  // Función para INICIAR SESIÓN (Corregida)
   Future<bool> login(String email, String password) async {
-    final String url = '$_baseUrl/auth/login'; // <-- NUEVO: Endpoint de login
+    final String url = '$_baseUrl/auth/login';
 
     try {
       final response = await http.post(
@@ -43,7 +43,7 @@ class AuthService {
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode({
           'email': email,
-          'contrasena': password, // Solo los campos necesarios para login
+          'password': password, // <-- CORREGIDO: Se usa "password" en lugar de "contrasena"
         }),
       );
 
