@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:myapp/services/auth_service.dart'; // CAMBIO: Importa el servicio correcto
+import 'package:myapp/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,7 +14,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService(); // CAMBIO: Usa el servicio de autenticación
+  final _authService = AuthService();
 
   bool _obscureText = true;
   bool _isLoading = false;
@@ -60,12 +60,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       final password = _passwordController.text.trim();
 
       try {
-        // CAMBIO: Llama al método login del AuthService
         final success = await _authService.login(email, password);
 
         if (mounted) {
           if (success) {
-            // TODO: Guardar el token y el ID de usuario de forma segura
             context.go('/home');
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -93,7 +91,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     }
   }
 
-  // ... (El resto del archivo build y los widgets auxiliares permanecen sin cambios)
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -147,8 +144,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       ),
                       const SizedBox(height: 40),
                       _buildLoginButton(),
-                      const SizedBox(height: 16),
-                      _buildOwnerLoginButton(),
+                      // El botón de propietario ha sido eliminado
                       const SizedBox(height: 30),
                       _buildRegisterLink(),
                       SizedBox(height: MediaQuery.of(context).size.height * 0.05),
@@ -234,21 +230,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildOwnerLoginButton() {
-    return OutlinedButton.icon(
-      onPressed: () => context.go('/owner-home'),
-      icon: const Icon(Icons.business_center_outlined),
-      label: const Text('Soy Propietario'),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.white,
-        side: const BorderSide(color: Colors.white, width: 1.5),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
   Widget _buildRegisterLink() {
     return GestureDetector(
       onTap: () => context.go('/register'),
@@ -262,4 +243,3 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 }
-
