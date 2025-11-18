@@ -14,20 +14,17 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   final AuthService _authService = AuthService();
 
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
-  bool _estaActivo = true;
-  int _idRol = 2;
+  final bool _estaActivo = true; // Valor por defecto
+  final int _idRol = 2; // Valor por defecto para "Usuario"
 
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
 
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
-  final _confirmPasswordFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -44,7 +41,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     _controller.forward();
     _emailFocusNode.addListener(() => setState(() {}));
     _passwordFocusNode.addListener(() => setState(() {}));
-    _confirmPasswordFocusNode.addListener(() => setState(() {}));
   }
 
   @override
@@ -52,26 +48,18 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     _controller.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
-    _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 
   void _register() async {
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Las contraseñas no coinciden.')),
-      );
-      return;
-    }
-
+    // La validación de confirmar contraseña ya no es necesaria
     bool success = await _authService.register(
       _emailController.text,
       _passwordController.text,
-      _idRol,
-      _estaActivo,
+      _idRol, // Se usa el valor por defecto
+      _estaActivo, // Se usa el valor por defecto
     );
 
     if (success) {
@@ -106,7 +94,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.1),
                     _buildHeader(),
                     const SizedBox(height: 40),
                     _buildTextField(
@@ -125,25 +113,12 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                       obscureText: _obscurePassword,
                       toggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      controller: _confirmPasswordController,
-                      focusNode: _confirmPasswordFocusNode,
-                      icon: Icons.lock_outline,
-                      hint: 'Confirmar Contraseña',
-                      isPassword: true,
-                      obscureText: _obscureConfirmPassword,
-                      toggleObscure: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildRoleDropdown(),
-                    const SizedBox(height: 20),
-                    _buildStatusSwitch(),
+                    // Se eliminan los campos de confirmar contraseña, rol y estado.
                     const SizedBox(height: 40),
                     _buildRegisterButton(),
                     const SizedBox(height: 30),
                     _buildLoginLink(),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.1),
                   ],
                 ),
               ),
@@ -213,54 +188,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         ),
       ),
       style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
-    );
-  }
-
-  Widget _buildRoleDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.3)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          value: _idRol,
-          isExpanded: true,
-          icon: const Icon(Icons.arrow_downward, color: Colors.white70),
-          dropdownColor: const Color(0xFF185a9d),
-          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
-          items: const [
-            DropdownMenuItem(value: 1, child: Text('Administrador')),
-            DropdownMenuItem(value: 2, child: Text('Jugador')),
-          ],
-          onChanged: (int? newValue) {
-            setState(() {
-              _idRol = newValue!;
-            });
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusSwitch() {
-    return SwitchListTile(
-      title: Text(
-        'Cuenta Activa',
-        style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
-      ),
-      value: _estaActivo,
-      onChanged: (bool value) {
-        setState(() {
-          _estaActivo = value;
-        });
-      },
-      activeColor: Colors.white,
-      activeTrackColor: const Color(0xFF43cea2),
-      inactiveThumbColor: Colors.white70,
-      inactiveTrackColor: Colors.white.withOpacity(0.3),
     );
   }
 

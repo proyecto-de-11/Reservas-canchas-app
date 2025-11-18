@@ -24,7 +24,12 @@ Crear una aplicación Flutter con un flujo de autenticación completo, una `Home
 ### 2. Pantalla de Registro (`register_screen.dart`)
 
 - **Ruta:** `/register`
-- **Diseño:** Formulario de registro.
+- **Diseño:** Formulario de registro simplificado.
+- **Cambios Recientes:**
+    - Se eliminó el campo "Confirmar Contraseña" para agilizar el proceso.
+    - El rol del nuevo usuario se asigna automáticamente como "Jugador" por defecto.
+    - El estado de la cuenta se establece como "Activada" por defecto.
+    - Los campos de rol y estado ya no son visibles en la interfaz de usuario.
 
 ### 3. Pantalla de Inicio (`home_screen.dart`)
 
@@ -74,4 +79,5 @@ La navegación es manejada por `go_router`. Las rutas configuradas son:
 4.  **Rediseño Detallado de la Pantalla de Perfil:**
     - Se reestructuró `profile_screen.dart` para incluir toda la información solicitada, organizada en tarjetas lógicas y con un diseño más rico.
     - Se añadió un `FloatingActionButton` para futuras funcionalidades de edición.
-5.  **Actualización de Blueprint:** Se documentó el nuevo diseño detallado de la pantalla de perfil.
+5.  **Simplificación del Registro:** Se modificó `register_screen.dart` para eliminar campos y establecer valores por defecto, agilizando la creación de cuentas.
+6.  **Actualización de Blueprint:** Se documentaron todos los cambios realizados.
