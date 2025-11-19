@@ -1,95 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'login_screen.dart';
-import 'register_screen.dart';
-import 'home_screen.dart';
-import 'create_reservation_screen.dart';
-import 'profile_screen.dart';
-import 'chat_list_screen.dart';
-import 'chat_screen.dart';
-import 'sports_preferences_screen.dart';
-import 'team_stats_screen.dart';
+import 'package:myapp/home_screen.dart';
+import 'package:myapp/login_screen.dart';
+import 'package:myapp/register_screen.dart';
+import 'package:myapp/screens/search_users_screen.dart';
+import 'package:myapp/services/auth_service.dart'; // Importar AuthService
 
-void main() async {
-  await initializeDateFormatting('es_ES', null);
+void main() async { // Convertir main a async
+  // Asegurarse de que los bindings de Flutter estén inicializados
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Intentar cargar el token de autenticación al iniciar la app
+  await AuthService.tryLoadToken();
+
   runApp(const MyApp());
 }
 
+// Determina la ruta inicial basada en si el usuario está autenticado
+final String initialRoute = AuthService.token != null ? '/home' : '/';
+
 final GoRouter _router = GoRouter(
-  routes: <RouteBase>[
+  initialLocation: initialRoute,
+  routes: [
     GoRoute(
       path: '/',
-      builder: (BuildContext context, GoRouterState state) {
-        return const LoginScreen();
-      },
-      routes: <RouteBase>[
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/home',
+      builder: (context, state) => const HomeScreen(),
+      routes: [
         GoRoute(
-          path: 'register',
-          builder: (BuildContext context, GoRouterState state) {
-            return const RegisterScreen();
-          },
-        ),
-        GoRoute(
-          path: 'home',
-          builder: (BuildContext context, GoRouterState state) {
-            // The TabController is no longer needed here.
-            return const HomeScreen();
-          },
-          routes: <RouteBase>[
-            GoRoute(
-              path: 'chats',
-              builder: (BuildContext context, GoRouterState state) {
-                return const ChatListScreen();
-              },
-              routes: <RouteBase>[
-                GoRoute(
-                  path: ':userId',
-                  builder: (BuildContext context, GoRouterState state) {
-                    final userId = state.pathParameters['userId'];
-                    if (userId == null || userId.isEmpty) {
-                      return Scaffold(
-                        appBar: AppBar(title: const Text('Error de Navegación')),
-                        body: const Center(child: Text('El ID del chat no es válido.')),
-                      );
-                    }
-                    final extra = state.extra as Map<String, dynamic>?;
-                    final userName = extra?['userName'] as String? ?? 'Usuario';
-                    return ChatScreen(otherUserName: userName);
-                  },
-                ),
-              ],
-            ),
-            GoRoute(
-              path: 'team-stats',
-              builder: (BuildContext context, GoRouterState state) {
-                return const TeamStatsScreen();
-              },
-            ),
-          ],
-        ),
-        GoRoute(
-          path: 'create-reservation',
-          builder: (BuildContext context, GoRouterState state) {
-            return const CreateReservationScreen();
-          },
-        ),
-        GoRoute(
-          path: 'profile',
-          builder: (BuildContext context, GoRouterState state) {
-            return const ProfileScreen();
-          },
-          routes: <RouteBase>[
-            GoRoute(
-              path: 'preferences',
-              builder: (BuildContext context, GoRouterState state) {
-                return const SportsPreferencesScreen();
-              },
-            ),
-          ],
+          path: 'chats',
+          builder: (context, state) => const Center(child: Text('Chats Screen')),
         ),
       ],
+    ),
+    GoRoute(
+      path: '/register',
+      builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: '/create-reservation',
+      builder: (context, state) => const Center(child: Text('Create Reservation Screen')),
+    ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const Center(child: Text('Profile Screen')),
+    ),
+    GoRoute(
+      path: '/search', // Nueva ruta para la pantalla de búsqueda
+      builder: (context, state) => const SearchUsersScreen(),
     ),
   ],
 );
@@ -100,14 +61,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      routerConfig: _router,
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.poppinsTextTheme(),
-        primaryColor: const Color(0xFF007BFF),
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      debugShowCheckedModeBanner: false,
+      routerConfig: _router,
     );
   }
 }

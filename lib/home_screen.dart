@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myapp/services/auth_service.dart';
 import 'dart:async';
 
-// --- DATA MOCKS V7 ---
+// --- DATA MOCKS V12 ---
 final List<Map<String, dynamic>> tournaments = [
    {
     "name": "Copa de Verano 2024",
@@ -57,7 +58,7 @@ final List<Map<String, dynamic>> courts = [
   },
 ];
 
-// --- ELITE WIDGETS V7 (Personalized Welcome) ---
+// --- ELITE WIDGETS V12 ---
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -186,7 +187,7 @@ class CourtCard extends StatelessWidget {
   }
 }
 
-// --- MAIN SCREEN V7 (Personalized Welcome Edition) ---
+// --- MAIN SCREEN V12 (Logout Logic Fixed) ---
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -200,12 +201,26 @@ class _HomeScreenState extends State<HomeScreen> {
   final String userName = "Lionel Messi"; // Placeholder for logged-in user
 
   void _onItemTapped(int index) {
-    if (index == 4) { // Special case for logout
-      _showLogoutConfirmationDialog(context);
-      return;
+    if (index == 2) { // Botón central de Reservar
+        context.go('/create-reservation');
+        return;
     }
-    if (index == _bottomNavIndex) return;
-    setState(() => _bottomNavIndex = index);
+    
+    // Navegación para los demás ítems de la barra
+    switch (index) {
+      case 0: // Home
+        if (_bottomNavIndex != 0) setState(() => _bottomNavIndex = 0);
+        break;
+      case 1: // Buscar
+        context.go('/search');
+        break;
+      case 3: // Chats
+        context.go('/home/chats');
+        break;
+      case 4: // Perfil
+        context.go('/profile');
+        break;
+    }
   }
 
   void _showLogoutConfirmationDialog(BuildContext context) {
@@ -218,15 +233,16 @@ class _HomeScreenState extends State<HomeScreen> {
           actions: <Widget>[
             TextButton(
               child: Text('Cancelar', style: GoogleFonts.poppins(color: Colors.grey[700])),
-              onPressed: () {
-                Navigator.of(dialogContext).pop(); // Close the dialog
-              },
+              onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             TextButton(
               child: Text('Cerrar Sesión', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.bold)),
-              onPressed: () {
-                Navigator.of(dialogContext).pop(); // Close the dialog
-                context.go('/');
+              onPressed: () async { // Convertir a async
+                Navigator.of(dialogContext).pop();
+                await AuthService.logout(); // Llamar al nuevo método de logout
+                if (mounted) {
+                    context.go('/');
+                } 
               },
             ),
           ],
@@ -236,6 +252,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _onProfileMenuSelected(String value) {
+    switch (value) {
+      case 'profile':
+        context.go('/profile');
+        break;
+      case 'logout':
+        _showLogoutConfirmationDialog(context);
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -262,8 +288,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SectionHeader(title: 'Actividad Reciente', icon: Icons.whatshot_outlined),
-          ...teamRequests.map((request) => TeamRequestCard(requestData: request)).toList(),
-          ...courts.map((court) => CourtCard(courtData: court)).toList(),
+          ...teamRequests.map((request) => TeamRequestCard(requestData: request)),
+          ...courts.map((court) => CourtCard(courtData: court)),
           const SizedBox(height: 100), // Space for floating nav bar
         ],
       ),
@@ -275,21 +301,34 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Bienvenido', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87)),
-            Text(userName, style: GoogleFonts.poppins(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.w500)),
-          ],
-        ),
+        Text('Bienvenido', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87)),
         const Spacer(),
-        GestureDetector(
-          onTap: () => context.go('/profile'),
-          child: const CircleAvatar(
-            radius: 26,
-            backgroundImage: NetworkImage('https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-          ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(userName, style: GoogleFonts.poppins(fontSize: 18, color: Colors.grey[700], fontWeight: FontWeight.w600)),
+            const SizedBox(width: 12),
+            PopupMenuButton<String>(
+              onSelected: _onProfileMenuSelected,
+              offset: const Offset(0, 50),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  value: 'profile',
+                  child: ListTile(leading: const Icon(Icons.person_outline), title: Text('Ver Perfil', style: GoogleFonts.poppins())),
+                ),
+                const PopupMenuDivider(),
+                PopupMenuItem<String>(
+                  value: 'logout',
+                  child: ListTile(leading: const Icon(Icons.logout, color: Colors.red), title: Text('Cerrar Sesión', style: GoogleFonts.poppins(color: Colors.red))),
+                ),
+              ],
+              child: const CircleAvatar(
+                radius: 26,
+                backgroundImage: NetworkImage('https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -299,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -308,44 +347,48 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home_filled, 'Inicio', 0),
-            _buildNavItem(Icons.add_circle_outline, 'Reservar', 1),
-            _buildNavItem(Icons.chat_bubble_outline_rounded, 'Chats', 2),
-            _buildNavItem(Icons.person_outline_rounded, 'Perfil', 3),
-            _buildNavItem(Icons.logout, 'Salir', 4),
+            _buildNavItem(Icons.home_filled, 0, label: 'Inicio'),
+            _buildNavItem(Icons.search, 1, label: 'Buscar'),
+            _buildMiddleNavItem(),
+            _buildNavItem(Icons.chat_bubble_outline_rounded, 3, label: 'Chats'),
+            _buildNavItem(Icons.person_outline_rounded, 4, label: 'Perfil'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index) {
+  Widget _buildNavItem(IconData icon, int index, {String? label}) {
     final isSelected = _bottomNavIndex == index;
     return InkWell(
-      onTap: () {
-         _onItemTapped(index);
-          switch (index) {
-            case 0: break; // Already home
-            case 1: context.go('/create-reservation'); break;
-            case 2: context.go('/home/chats'); break;
-            case 3: context.go('/profile'); break;
-            case 4: _showLogoutConfirmationDialog(context); break;
-          }
-      },
+      onTap: () => _onItemTapped(index),
       borderRadius: BorderRadius.circular(16),
       child: Container(
          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-         decoration: BoxDecoration(
-          color: isSelected && index != 4 ? const Color(0xFF185a9d).withAlpha(26) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16)
-         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: isSelected && index != 4 ? const Color(0xFF185a9d) : Colors.grey[600], size: 26),
-            if (isSelected && index != 4) const SizedBox(width: 8),
-            if (isSelected && index != 4) Text(label, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: const Color(0xFF185a9d))),
+            Icon(icon, color: isSelected ? const Color(0xFF185a9d) : Colors.grey[600], size: 26),
+            if (label != null) const SizedBox(height: 4),
+            if (label != null) Text(label, style: GoogleFonts.poppins(fontSize: 10, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal, color: isSelected ? const Color(0xFF185a9d) : Colors.grey[600])),
           ],
         ),
+      ),
+    );
+  }
+  
+  Widget _buildMiddleNavItem() {
+    return InkWell(
+      onTap: () => _onItemTapped(2),
+      customBorder: const CircleBorder(),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Color(0xFF185a9d),
+          boxShadow: [BoxShadow(color: Color(0xFF185a9d), blurRadius: 10, spreadRadius: -2)]
+        ),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
   }
