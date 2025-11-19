@@ -7,7 +7,9 @@ import 'package:myapp/services/auth_service.dart';
 import 'dart:developer' as developer;
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  // 1. ACEPTAR UN userId OPCIONAL
+  final String? userId;
+  const ProfileScreen({super.key, this.userId});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -20,27 +22,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final userId = authService.userId;
-
-      if (userId != null) {
-        setState(() {
-          _userProfileFuture = _apiService.getUserProfile(userId);
-        });
-      } else {
-        developer.log("Error: userId es nulo en initState de ProfileScreen.", name: 'ProfileScreen', level: 1000);
-      }
-    });
+    // 2. USAR LA LÓGICA DE CARGA EN didChangeDependencies PARA ACCEDER AL PROVIDER
+    // DE FORMA SEGURA.
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Solo cargar si no se ha cargado ya
+    if (_userProfileFuture == null) {
+      _loadProfile();
+    }
+  }
+
+  void _loadProfile() {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    
+    // 3. DETERMINAR QUÉ ID USAR
+    String? profileIdToLoad;
+    if (widget.userId != null) {
+      // Si se pasa un ID, se usa ese (para ver perfiles de otros)
+      profileIdToLoad = widget.userId;
+    } else {
+      // Si no, se usa el del usuario logueado (para ver el propio perfil)
+      profileIdToLoad = authService.userId;
+    }
+
+    if (profileIdToLoad != null) {
+      setState(() {
+        _userProfileFuture = _apiService.getUserProfile(profileIdToLoad!);
+      });
+    } else {
+      developer.log("Error: No se pudo determinar un ID de perfil para cargar.", name: 'ProfileScreen', level: 1000);
+       setState(() {
+        _userProfileFuture = Future.value(null); // Para que el FutureBuilder muestre error
+       });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context, listen: false);
+    // Determina si estamos viendo nuestro propio perfil
+    final isMyProfile = widget.userId == null || widget.userId == authService.userId;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mi Perfil', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: Colors.white)),
+        title: Text(isMyProfile ? 'Mi Perfil' : 'Perfil de Usuario', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: Colors.white)),
         backgroundColor: const Color(0xFF0056B3),
         foregroundColor: Colors.white,
         elevation: 4,
@@ -87,21 +116,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (userProfile.bio != null && userProfile.bio!.isNotEmpty)
                   _buildBiographyCard(userProfile.bio!),
                 const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: _buildLogoutButton(context, authService),
-                ),
+                // Solo mostrar botón de logout si es mi perfil
+                if(isMyProfile)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: _buildLogoutButton(context, authService),
+                  ),
                 const SizedBox(height: 20),
               ],
             );
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      // Solo mostrar botón de editar si es mi perfil
+      floatingActionButton: isMyProfile ? FloatingActionButton(
         onPressed: () {},
         backgroundColor: const Color(0xFF007BFF),
         child: const Icon(Icons.edit, color: Colors.white),
-      ),
+      ) : null,
     );
   }
 

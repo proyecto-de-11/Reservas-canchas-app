@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart'; // <<< IMPORTACIÓN CORREGIDA
+import 'package:provider/provider.dart';
 
 import 'package:myapp/home_screen.dart';
-import 'package:myapp/login_screen.dart'; // <<< RUTA CORREGIDA
+import 'package:myapp/login_screen.dart';
 import 'package:myapp/register_screen.dart';
 import 'package:myapp/screens/search_users_screen.dart';
-import 'package:myapp/screens/chat_detail_screen.dart';
 import 'package:myapp/screens/chat_list_screen.dart';
-import 'package:myapp/profile_screen.dart'; // <<< RUTA CORREGIDA
+import 'package:myapp/screens/chat_screen.dart';
+import 'package:myapp/profile_screen.dart';
 import 'package:myapp/services/auth_service.dart';
 
 void main() {
@@ -75,22 +75,21 @@ class MyApp extends StatelessWidget {
           builder: (context, state) => const Center(child: Text('Create Reservation Screen')),
         ),
         GoRoute(
-          path: '/profile',
-          builder: (context, state) => const ProfileScreen(),
-        ),
+            path: '/profile/:userId',
+            builder: (context, state) {
+              final userId = state.pathParameters['userId']!;
+              return ProfileScreen(userId: userId);
+            }),
         GoRoute(
           path: '/chats',
           builder: (context, state) => const ChatListScreen(),
-          routes: [
-            GoRoute(
-              path: 'detail',
-              builder: (context, state) {
-                final chat = state.extra as Map<String, dynamic>;
-                return ChatDetailScreen(chat: chat);
-              },
-            ),
-          ],
         ),
+        GoRoute(
+            path: '/chat/:userId',
+            builder: (context, state) {
+              final userId = state.pathParameters['userId']!;
+              return ChatScreen(userId: userId);
+            }),
       ],
     );
 

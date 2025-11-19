@@ -22,18 +22,18 @@ class UserProfile {
     this.profilePictureUrl,
   });
 
+  // CORRECCIÓN FINAL: Mapeo de la estructura de datos plana de la API.
   factory UserProfile.fromJson(Map<String, dynamic> json) {
-    // El endpoint /api/perfiles/usuario/{usuarioId} probablemente devuelve un objeto combinado
-    // con datos del perfil y del usuario. Aquí asumimos una estructura plausible.
     return UserProfile(
-      id: json['id'] as String,
-      userId: json['usuario']?['id'] as String? ?? '', // Asumiendo que el objeto de usuario está anidado
-      fullName: json['usuario']?['nombre'] as String? ?? 'Nombre no disponible',
-      email: json['usuario']?['email'] as String? ?? 'Email no disponible',
+      // Asumimos que el ID principal del perfil es 'id' y el del usuario es 'usuarioId'.
+      id: json['id']?.toString() ?? json['usuarioId']?.toString() ?? '',
+      userId: json['usuarioId']?.toString() ?? '',
+      fullName: json['nombreCompleto'] as String? ?? 'Nombre no disponible',
+      email: json['email'] as String? ?? 'Email no disponible',
       country: json['pais'] as String?,
       city: json['ciudad'] as String?,
-      bio: json['bio'] as String?,
-      profilePictureUrl: json['fotoPerfilUrl'] as String?,
+      bio: json['biografia'] as String?,
+      profilePictureUrl: json['fotoPerfil'] as String?,
     );
   }
 }

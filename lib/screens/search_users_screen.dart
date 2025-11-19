@@ -63,7 +63,7 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Error al cargar perfiles: ${e.toString()}';
+          _errorMessage = 'Error al cargar perfiles. Por favor, inténtalo más tarde.';
           _isLoading = false;
         });
       }
@@ -74,7 +74,6 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredProfiles = _allProfiles.where((profile) {
-        // CORRECCIÓN: Usar 'nombreCompleto' para el filtro
         final name = profile['nombreCompleto']?.toLowerCase() ?? '';
         final email = profile['email']?.toLowerCase() ?? '';
         return name.contains(query) || email.contains(query);
@@ -176,32 +175,33 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
       itemCount: _filteredProfiles.length,
       itemBuilder: (context, index) {
         final profile = _filteredProfiles[index];
-        return _AnimatedUserCard(profile: profile, index: index);
+        return UserCard(profile: profile, index: index);
       },
     );
   }
 }
 
-class _AnimatedUserCard extends StatefulWidget {
+class UserCard extends StatefulWidget {
   final Map<String, dynamic> profile;
   final int index;
 
-  const _AnimatedUserCard({required this.profile, required this.index});
+  const UserCard({super.key, required this.profile, required this.index});
 
   @override
-  State<_AnimatedUserCard> createState() => _AnimatedUserCardState();
+  State<UserCard> createState() => _UserCardState();
 }
 
-class _AnimatedUserCardState extends State<_AnimatedUserCard> {
+class _UserCardState extends State<UserCard> {
   bool _isHovered = false;
-  double _scale = 1.0;
-
-  void _onTapDown(TapDownDetails details) => setState(() => _scale = 0.96);
-  void _onTapUp(TapUpDetails details) => setState(() => _scale = 1.0);
-  void _onTapCancel() => setState(() => _scale = 1.0);
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = widget.profile['fotoPerfil'] as String?;
+    final bool hasValidImage = imageUrl != null && imageUrl.isNotEmpty && Uri.tryParse(imageUrl)?.hasAbsolutePath == true;
+    
+    // LA SOLUCIÓN FINAL: Usar la clave correcta 'usuarioId' y convertir a String.
+    final userId = widget.profile['usuarioId']?.toString();
+
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 400 + (widget.index * 50)),
@@ -215,99 +215,77 @@ class _AnimatedUserCardState extends State<_AnimatedUserCard> {
       child: MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
-        child: GestureDetector(
-          onTapDown: _onTapDown,
-          onTapUp: _onTapUp,
-          onTapCancel: _onTapCancel,
-          onTap: () {
-             // CORRECCIÓN: Usar 'usuarioID' para la navegación
-             final userId = widget.profile['usuarioID'];
-             if (userId != null) {
-               context.go('/profile/$userId');
-             }
-          },
-          child: AnimatedScale(
-            scale: _scale,
-            duration: const Duration(milliseconds: 150),
-            child: UserCard(profile: widget.profile, isHovered: _isHovered),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.symmetric(vertical: 8.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: _isHovered ? const Color(0xFF185a9d).withAlpha(77) : Colors.black.withAlpha(26),
+                blurRadius: _isHovered ? 20 : 15,
+                spreadRadius: _isHovered ? -2 : 0,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class UserCard extends StatelessWidget {
-  final Map<String, dynamic> profile;
-  final bool isHovered;
-
-  const UserCard({super.key, required this.profile, this.isHovered = false});
-
-  @override
-  Widget build(BuildContext context) {
-    // CORRECCIÓN: Usar 'fotoPerfil' para la imagen
-    final imageUrl = profile['fotoPerfil'] as String?;
-    final bool hasValidImage = imageUrl != null && imageUrl.isNotEmpty && Uri.tryParse(imageUrl)?.hasAbsolutePath == true;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: isHovered ? const Color(0xFF185a9d).withAlpha(77) : Colors.black.withAlpha(26),
-            blurRadius: isHovered ? 20 : 15,
-            spreadRadius: isHovered ? -2 : 0,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundImage: hasValidImage ? NetworkImage(imageUrl) : null,
-              backgroundColor: Colors.grey[200],
-              child: !hasValidImage ? Icon(Icons.person_outline, size: 32, color: Colors.grey[500]) : null,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // CORRECCIÓN: Usar 'nombreCompleto' para el nombre
-                  Text(
-                    profile['nombreCompleto'] ?? 'Nombre no disponible',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17, color: const Color(0xFF0A2540)),
-                  ),
-                  if (profile['email'] != null)
-                    Text(
-                      profile['email'] ?? 'Email no disponible',
-                      style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                       if (userId != null) {
+                        context.go('/profile/$userId');
+                      }
+                    },
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundImage: hasValidImage ? NetworkImage(imageUrl!) : null,
+                          backgroundColor: Colors.grey[200],
+                          child: !hasValidImage ? Icon(Icons.person_outline, size: 32, color: Colors.grey[500]) : null,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.profile['nombreCompleto'] ?? 'Nombre no disponible',
+                                style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17, color: const Color(0xFF0A2540)),
+                              ),
+                              if (widget.profile['email'] != null)
+                                Text(
+                                  widget.profile['email'] ?? 'Email no disponible',
+                                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                ],
-              ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filledTonal(
+                  onPressed: () {
+                    if (userId != null) {
+                      context.go('/chat/$userId');
+                    }
+                  },
+                  icon: const Icon(Icons.chat_bubble_outline_rounded),
+                  style: IconButton.styleFrom(
+                    foregroundColor: const Color(0xFF185a9d),
+                    backgroundColor: const Color(0xFF185a9d).withAlpha(26),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            IconButton.filledTonal(
-              onPressed: () {
-                 // CORRECCIÓN: Usar 'usuarioID' para el chat
-                 final userId = profile['usuarioID'];
-                 if (userId != null) {
-                    context.go('/chat/$userId');
-                 }
-              },
-              icon: const Icon(Icons.chat_bubble_outline_rounded),
-              style: IconButton.styleFrom(
-                foregroundColor: const Color(0xFF185a9d),
-                backgroundColor: const Color(0xFF185a9d).withAlpha(26),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
