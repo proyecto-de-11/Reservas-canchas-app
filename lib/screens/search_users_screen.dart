@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:myapp/services/profile_service.dart';
+import 'package:myapp/services/api_service.dart';
+import 'package:myapp/services/auth_service.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
+import 'dart:developer' as developer;
 
 class SearchUsersScreen extends StatefulWidget {
   const SearchUsersScreen({super.key});
@@ -12,7 +15,7 @@ class SearchUsersScreen extends StatefulWidget {
 }
 
 class _SearchUsersScreenState extends State<SearchUsersScreen> {
-  final ProfileService _profileService = ProfileService();
+  final ApiService _apiService = ApiService();
   final TextEditingController _searchController = TextEditingController();
 
   List<Map<String, dynamic>> _allProfiles = [];
@@ -23,14 +26,33 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProfiles();
     _searchController.addListener(_filterProfiles);
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isLoading) {
+      _loadProfiles();
+    }
+  }
+
   Future<void> _loadProfiles() async {
-    await Future.delayed(const Duration(milliseconds: 300));
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final token = authService.token;
+
+    if (token == null) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Error de autenticación: No se encontró token.';
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
     try {
-      final profiles = await _profileService.getPublicProfiles();
+      final profiles = await _apiService.getPublicProfiles(token: token);
       if (mounted) {
         setState(() {
           _allProfiles = profiles;
@@ -52,8 +74,10 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredProfiles = _allProfiles.where((profile) {
+        // CORRECCIÓN: Usar 'nombreCompleto' para el filtro
         final name = profile['nombreCompleto']?.toLowerCase() ?? '';
-        return name.contains(query);
+        final email = profile['email']?.toLowerCase() ?? '';
+        return name.contains(query) || email.contains(query);
       }).toList();
     });
   }
@@ -70,10 +94,9 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
       appBar: AppBar(
         toolbarHeight: 80,
         title: _buildSearchBar(),
-        // --- BOTÓN DE VOLVER CORREGIDO ---
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.grey[800]),
-          onPressed: () => context.go('/home'), // ¡ACCIÓN CORREGIDA!
+          onPressed: () => context.go('/home'),
           tooltip: 'Volver al inicio',
         ),
         automaticallyImplyLeading: false,
@@ -112,7 +135,7 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
         controller: _searchController,
         autofocus: true,
         decoration: InputDecoration(
-          hintText: 'Buscar personas...',
+          hintText: 'Buscar por nombre o email...',
           hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
           border: InputBorder.none,
           prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
@@ -130,7 +153,7 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
       return const Center(child: CircularProgressIndicator(color: Color(0xFF185a9d)));
     }
     if (_errorMessage.isNotEmpty) {
-      return Center(child: Text(_errorMessage, style: GoogleFonts.poppins(color: Colors.red)));
+      return Center(child: Text(_errorMessage, style: GoogleFonts.poppins(color: Colors.red), textAlign: TextAlign.center));
     }
     if (_filteredProfiles.isEmpty) {
       return Center(
@@ -142,6 +165,7 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
             Text(
               _searchController.text.isEmpty ? 'Busca jugadores por su nombre' : 'No se encontraron resultados',
               style: GoogleFonts.poppins(fontSize: 18, color: Colors.grey[700], fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -180,15 +204,12 @@ class _AnimatedUserCardState extends State<_AnimatedUserCard> {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 400 + (widget.index * 100)),
+      duration: Duration(milliseconds: 400 + (widget.index * 50)),
       curve: Curves.easeOutCubic,
       builder: (context, value, child) {
         return Transform.translate(
           offset: Offset(0, 50 * (1 - value)),
-          child: Transform.scale(
-            scale: value,
-            child: Opacity(opacity: value, child: child),
-          ),
+          child: Opacity(opacity: value, child: child),
         );
       },
       child: MouseRegion(
@@ -198,6 +219,13 @@ class _AnimatedUserCardState extends State<_AnimatedUserCard> {
           onTapDown: _onTapDown,
           onTapUp: _onTapUp,
           onTapCancel: _onTapCancel,
+          onTap: () {
+             // CORRECCIÓN: Usar 'usuarioID' para la navegación
+             final userId = widget.profile['usuarioID'];
+             if (userId != null) {
+               context.go('/profile/$userId');
+             }
+          },
           child: AnimatedScale(
             scale: _scale,
             duration: const Duration(milliseconds: 150),
@@ -217,6 +245,7 @@ class UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // CORRECCIÓN: Usar 'fotoPerfil' para la imagen
     final imageUrl = profile['fotoPerfil'] as String?;
     final bool hasValidImage = imageUrl != null && imageUrl.isNotEmpty && Uri.tryParse(imageUrl)?.hasAbsolutePath == true;
 
@@ -235,37 +264,50 @@ class UserCard extends StatelessWidget {
           ),
         ],
       ),
-      child: InkWell(
-        onTap: () {}, // Navegación al perfil
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundImage: hasValidImage ? NetworkImage(imageUrl) : null,
-                backgroundColor: Colors.grey[200],
-                child: !hasValidImage ? Icon(Icons.person_outline, size: 32, color: Colors.grey[500]) : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundImage: hasValidImage ? NetworkImage(imageUrl) : null,
+              backgroundColor: Colors.grey[200],
+              child: !hasValidImage ? Icon(Icons.person_outline, size: 32, color: Colors.grey[500]) : null,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // CORRECCIÓN: Usar 'nombreCompleto' para el nombre
+                  Text(
+                    profile['nombreCompleto'] ?? 'Nombre no disponible',
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17, color: const Color(0xFF0A2540)),
+                  ),
+                  if (profile['email'] != null)
+                    Text(
+                      profile['email'] ?? 'Email no disponible',
+                      style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  profile['nombreCompleto'] ?? 'Nombre no disponible',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17, color: const Color(0xFF0A2540)),
-                ),
+            ),
+            const SizedBox(width: 8),
+            IconButton.filledTonal(
+              onPressed: () {
+                 // CORRECCIÓN: Usar 'usuarioID' para el chat
+                 final userId = profile['usuarioID'];
+                 if (userId != null) {
+                    context.go('/chat/$userId');
+                 }
+              },
+              icon: const Icon(Icons.chat_bubble_outline_rounded),
+              style: IconButton.styleFrom(
+                foregroundColor: const Color(0xFF185a9d),
+                backgroundColor: const Color(0xFF185a9d).withAlpha(26),
               ),
-              const SizedBox(width: 8),
-              IconButton.filledTonal(
-                onPressed: () => print('Iniciar chat con: ${profile['nombreCompleto']}'),
-                icon: const Icon(Icons.chat_bubble_outline_rounded),
-                style: IconButton.styleFrom(
-                  foregroundColor: const Color(0xFF185a9d),
-                  backgroundColor: const Color(0xFF185a9d).withAlpha(26),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

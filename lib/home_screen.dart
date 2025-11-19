@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myapp/models/user_profile.dart';
+import 'package:myapp/services/api_service.dart';
 import 'package:myapp/services/auth_service.dart';
+import 'package:provider/provider.dart';
+
+// ... (Data Mocks and Elite Widgets remain the same) ...
 
 // --- DATA MOCKS V12 ---
 final List<Map<String, dynamic>> tournaments = [
@@ -57,7 +62,7 @@ final List<Map<String, dynamic>> courts = [
   },
 ];
 
-// --- ELITE WIDGETS V12 ---
+// --- ELITE WIDGETS V12 (con correcciones de Opacidad) ---
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -95,7 +100,7 @@ class TournamentCard extends StatelessWidget {
           alignment: Alignment.bottomLeft,
           children: [
             Image.network(tournamentData['imageUrl'], height: 190, width: double.infinity, fit: BoxFit.cover),
-            Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.black.withOpacity(0.8), Colors.transparent], begin: Alignment.bottomCenter, end: Alignment.center))),
+            Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.black.withAlpha(204), Colors.transparent], begin: Alignment.bottomCenter, end: Alignment.center))),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -104,13 +109,13 @@ class TournamentCard extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: const Color(0xFF185a9d).withOpacity(0.8), borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(color: const Color(0xFF185a9d).withAlpha(204), borderRadius: BorderRadius.circular(8)),
                     child: Text(tournamentData['sport'], style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                   const SizedBox(height: 8),
                   Text(tournamentData['name'], style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
                   const SizedBox(height: 4),
-                  Text(tournamentData['date'], style: GoogleFonts.poppins(fontSize: 14, color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w500)),
+                  Text(tournamentData['date'], style: GoogleFonts.poppins(fontSize: 14, color: Colors.white.withAlpha(230), fontWeight: FontWeight.w500)),
                 ],
               ),
             ),
@@ -186,8 +191,6 @@ class CourtCard extends StatelessWidget {
   }
 }
 
-// --- MAIN SCREEN V13 (Chat Navigation Re-enabled) ---
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -197,15 +200,29 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _bottomNavIndex = 0;
-  final String userName = "Lionel Messi"; // Placeholder for logged-in user
+  Future<UserProfile?>? _userProfileFuture;
+  final ApiService _apiService = ApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final userId = authService.userId;
+      if (userId != null) {
+        setState(() {
+          _userProfileFuture = _apiService.getUserProfile(userId);
+        });
+      }
+    });
+  }
 
   void _onItemTapped(int index) {
-    if (index == 2) { // Botón central de Reservar
-        context.go('/create-reservation');
-        return;
+    if (index == 2) {
+      context.go('/create-reservation');
+      return;
     }
-    
-    // Navegación para los demás ítems de la barra
+
     switch (index) {
       case 0: // Home
         if (_bottomNavIndex != 0) setState(() => _bottomNavIndex = 0);
@@ -214,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context.go('/search');
         break;
       case 3: // Chats
-        context.go('/chats'); // Re-enabled navigation
+        context.go('/chats');
         break;
       case 4: // Perfil
         context.go('/profile');
@@ -223,6 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showLogoutConfirmationDialog(BuildContext context) {
+    final authService = Provider.of<AuthService>(context, listen: false);
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -236,12 +254,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             TextButton(
               child: Text('Cerrar Sesión', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.bold)),
-              onPressed: () async { // Convertir a async
+              onPressed: () {
                 Navigator.of(dialogContext).pop();
-                await AuthService.logout(); // Llamar al nuevo método de logout
-                if (mounted) {
-                    context.go('/');
-                } 
+                authService.logout();
               },
             ),
           ],
@@ -267,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: _buildHeader(context),
+        title: _buildHeader(),
         backgroundColor: const Color(0xFFF8F9FA),
         elevation: 0,
         toolbarHeight: 80,
@@ -289,47 +304,62 @@ class _HomeScreenState extends State<HomeScreen> {
           const SectionHeader(title: 'Actividad Reciente', icon: Icons.whatshot_outlined),
           ...teamRequests.map((request) => TeamRequestCard(requestData: request)),
           ...courts.map((court) => CourtCard(courtData: court)),
-          const SizedBox(height: 100), // Space for floating nav bar
+          const SizedBox(height: 100),
         ],
       ),
       bottomNavigationBar: _buildFloatingBottomNavBar(),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text('Bienvenido', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87)),
-        const Spacer(),
-        Row(
+  Widget _buildHeader() {
+    return FutureBuilder<UserProfile?>(
+      future: _userProfileFuture,
+      builder: (context, snapshot) {
+        String userName = "Usuario";
+        String userImage = "https://picsum.photos/200";
+
+        if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+          userName = snapshot.data!.fullName;
+          if (snapshot.data!.profilePictureUrl != null && snapshot.data!.profilePictureUrl!.isNotEmpty) {
+             userImage = snapshot.data!.profilePictureUrl!;
+          }
+        }
+
+        return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(userName, style: GoogleFonts.poppins(fontSize: 18, color: Colors.grey[700], fontWeight: FontWeight.w600)),
-            const SizedBox(width: 12),
-            PopupMenuButton<String>(
-              onSelected: _onProfileMenuSelected,
-              offset: const Offset(0, 50),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                PopupMenuItem<String>(
-                  value: 'profile',
-                  child: ListTile(leading: const Icon(Icons.person_outline), title: Text('Ver Perfil', style: GoogleFonts.poppins())),
-                ),
-                const PopupMenuDivider(),
-                PopupMenuItem<String>(
-                  value: 'logout',
-                  child: ListTile(leading: const Icon(Icons.logout, color: Colors.red), title: Text('Cerrar Sesión', style: GoogleFonts.poppins(color: Colors.red))),
+            Text('Bienvenido', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87)),
+            const Spacer(),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(userName, style: GoogleFonts.poppins(fontSize: 18, color: Colors.grey[700], fontWeight: FontWeight.w600)),
+                const SizedBox(width: 12),
+                PopupMenuButton<String>(
+                  onSelected: _onProfileMenuSelected,
+                  offset: const Offset(0, 50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'profile',
+                      child: ListTile(leading: const Icon(Icons.person_outline), title: Text('Ver Perfil', style: GoogleFonts.poppins())),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem<String>(
+                      value: 'logout',
+                      child: ListTile(leading: const Icon(Icons.logout, color: Colors.red), title: Text('Cerrar Sesión', style: GoogleFonts.poppins(color: Colors.red))),
+                    ),
+                  ],
+                  child: CircleAvatar(
+                    radius: 26,
+                    backgroundImage: NetworkImage(userImage),
+                  ),
                 ),
               ],
-              child: const CircleAvatar(
-                radius: 26,
-                backgroundImage: NetworkImage('https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-              ),
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -357,7 +387,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, int index, {String? label}) {
+   Widget _buildNavItem(IconData icon, int index, {String? label}) {
     final isSelected = _bottomNavIndex == index;
     return InkWell(
       onTap: () => _onItemTapped(index),

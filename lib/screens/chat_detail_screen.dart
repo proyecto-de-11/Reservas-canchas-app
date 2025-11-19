@@ -44,7 +44,7 @@ class ChatDetailScreen extends StatelessWidget {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withAlpha(26), // CORREGIDO
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
         onPressed: () => context.pop(),
@@ -92,7 +92,7 @@ class MessageBubbleV2 extends StatelessWidget {
             bottomLeft: Radius.circular(isMe ? 22 : 4),
             bottomRight: Radius.circular(isMe ? 4 : 22),
           ),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 5))]
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(26), blurRadius: 15, offset: const Offset(0, 5))] // CORREGIDO
         ),
         child: Column(
           crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -150,7 +150,7 @@ class _MessageInputFieldV2State extends State<MessageInputFieldV2> {
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, -5))]
+        boxShadow: [BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 20, offset: const Offset(0, -5))] // CORREGIDO
       ),
       child: SafeArea(
         child: Row(
@@ -179,7 +179,7 @@ class _MessageInputFieldV2State extends State<MessageInputFieldV2> {
                 shape: BoxShape.circle,
                 gradient: _canSend ? const LinearGradient(colors: [Color(0xFF185a9d), Color(0xFF43cea2)]) : null,
                 color: _canSend ? null : Colors.grey[300],
-                boxShadow: _canSend ? [BoxShadow(color: const Color(0xFF185a9d).withOpacity(0.6), blurRadius: 10, spreadRadius: -2)] : [],
+                boxShadow: _canSend ? [BoxShadow(color: const Color(0xFF185a9d).withAlpha(153), blurRadius: 10, spreadRadius: -2)] : [], // CORREGIDO
               ),
               child: IconButton(
                 icon: const Icon(Icons.send_rounded, color: Colors.white),

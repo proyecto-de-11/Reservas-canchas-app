@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/services/auth_service.dart';
+import 'package:provider/provider.dart'; // Importación añadida
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,11 +12,12 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
-  final AuthService _authService = AuthService();
+  // AuthService se obtendrá del Provider, ya no es necesario instanciarlo aquí.
+  // final AuthService _authService = AuthService();
 
   bool _obscurePassword = true;
-  final bool _estaActivo = true; // Valor por defecto
-  final int _idRol = 2; // Valor por defecto para "Usuario"
+  final bool _estaActivo = true;
+  final int _idRol = 2;
 
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -54,13 +56,20 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   void _register() async {
-    // La validación de confirmar contraseña ya no es necesaria
-    bool success = await _authService.register(
+    // Se añade la comprobación de `mounted` antes de la llamada asíncrona.
+    if (!mounted) return;
+
+    final authService = Provider.of<AuthService>(context, listen: false);
+    
+    bool success = await authService.register(
       _emailController.text,
       _passwordController.text,
-      _idRol, // Se usa el valor por defecto
-      _estaActivo, // Se usa el valor por defecto
+      _idRol,
+      _estaActivo,
     );
+
+    // Se vuelve a comprobar `mounted` después de la llamada asíncrona.
+    if (!mounted) return;
 
     if (success) {
       context.go('/home');
@@ -113,7 +122,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                       obscureText: _obscurePassword,
                       toggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
-                    // Se eliminan los campos de confirmar contraseña, rol y estado.
                     const SizedBox(height: 40),
                     _buildRegisterButton(),
                     const SizedBox(height: 30),
@@ -176,11 +184,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
               )
             : null,
         filled: true,
-        fillColor: Colors.white.withOpacity(0.15),
+        fillColor: Colors.white.withAlpha(38), // CORREGIDO
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+          borderSide: BorderSide(color: Colors.white.withAlpha(77)), // CORREGIDO
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

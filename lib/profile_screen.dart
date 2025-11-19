@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/models/user_profile.dart';
 import 'package:myapp/services/api_service.dart';
+import 'package:myapp/services/auth_service.dart';
+import 'dart:developer' as developer;
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,12 +20,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Asumimos un ID de usuario fijo por ahora. Esto se reemplazará con el ID del usuario autenticado.
-    _userProfileFuture = _apiService.getUserProfile('1');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final userId = authService.userId;
+
+      if (userId != null) {
+        setState(() {
+          _userProfileFuture = _apiService.getUserProfile(userId);
+        });
+      } else {
+        developer.log("Error: userId es nulo en initState de ProfileScreen.", name: 'ProfileScreen', level: 1000);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Mi Perfil', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: Colors.white)),
@@ -42,6 +56,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: FutureBuilder<UserProfile?>(
           future: _userProfileFuture,
           builder: (context, snapshot) {
+            if (_userProfileFuture == null) {
+               return const Center(child: Text("Iniciando perfil..."));
+            }
+            
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -58,7 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final userProfile = snapshot.data!;
 
             return ListView(
-              padding: const EdgeInsets.only(bottom: 80), // Space for the FAB
+              padding: const EdgeInsets.only(bottom: 80),
               children: [
                 _buildProfileHeader(context, userProfile),
                 const SizedBox(height: 20),
@@ -71,7 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: _buildLogoutButton(context),
+                  child: _buildLogoutButton(context, authService),
                 ),
                 const SizedBox(height: 20),
               ],
@@ -80,9 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Logic to enter edit mode
-        },
+        onPressed: () {},
         backgroundColor: const Color(0xFF007BFF),
         child: const Icon(Icons.edit, color: Colors.white),
       ),
@@ -114,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   radius: 52,
                   backgroundImage: (profile.profilePictureUrl != null && profile.profilePictureUrl!.isNotEmpty)
                       ? NetworkImage(profile.profilePictureUrl!)
-                      : const NetworkImage('https://picsum.photos/200'), // Placeholder
+                      : const NetworkImage('https://picsum.photos/200'),
                 ),
               ),
               const Positioned(
@@ -193,9 +209,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       title: 'Información Personal',
       children: [
         _buildDetailRow(icon: Icons.person_outline, label: 'Nombre', value: profile.fullName),
-        _buildDetailRow(icon: Icons.badge_outlined, label: 'Documento', value: 'No disponible'), // Placeholder
-        _buildDetailRow(icon: Icons.cake_outlined, label: 'Nacimiento', value: 'No disponible'), // Placeholder
-        _buildDetailRow(icon: Icons.wc_outlined, label: 'Género', value: 'No disponible'), // Placeholder
+        _buildDetailRow(icon: Icons.badge_outlined, label: 'Documento', value: 'No disponible'),
+        _buildDetailRow(icon: Icons.cake_outlined, label: 'Nacimiento', value: 'No disponible'),
+        _buildDetailRow(icon: Icons.wc_outlined, label: 'Género', value: 'No disponible'),
       ],
     );
   }
@@ -204,7 +220,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return _buildSectionCard(
       title: 'Información de Contacto',
       children: [
-        _buildDetailRow(icon: Icons.phone_outlined, label: 'Teléfono', value: 'No disponible'), // Placeholder
+        _buildDetailRow(icon: Icons.phone_outlined, label: 'Teléfono', value: 'No disponible'),
         _buildDetailRow(icon: Icons.location_city_outlined, label: 'Ciudad', value: profile.city ?? 'No especificada'),
         _buildDetailRow(icon: Icons.public_outlined, label: 'País', value: profile.country ?? 'No especificado'),
       ],
@@ -223,14 +239,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context) {
+  Widget _buildLogoutButton(BuildContext context, AuthService authService) {
     return ElevatedButton.icon(
       icon: const Icon(Icons.logout, color: Colors.white),
       label: Text(
         'Cerrar Sesión',
         style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
       ),
-      onPressed: () => context.go('/'),
+      onPressed: () {
+        authService.logout();
+      },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.redAccent,
         foregroundColor: Colors.white,

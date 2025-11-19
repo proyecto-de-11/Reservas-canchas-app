@@ -1,108 +1,109 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer' as developer;
 
-class AuthService {
+class AuthService with ChangeNotifier {
   final String _baseUrl = 'https://apiautentificacion.onrender.com/api';
-  static String? _token;
-  static const String _tokenKey = 'auth_token'; // Key for shared preferences
+  String? _token;
+  String? _userId;
+  bool _isLoggedIn = false;
 
-  // Getter para acceder al token desde otras partes de la app
-  static String? get token => _token;
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
 
-  // Carga el token desde el almacenamiento persistente
-  static Future<void> tryLoadToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString(_tokenKey);
-    if (_token != null) {
-        print('Token cargado exitosamente desde SharedPreferences.');
-    }
+  String? get token => _token;
+  String? get userId => _userId;
+  bool get isLoggedIn => _isLoggedIn;
+
+  AuthService() {
+    tryLoadSession();
   }
 
-  Future<bool> register(String email, String password, int idRol, bool estaActivo) async {
-    final String url = '$_baseUrl/auth/registrar';
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
-        body: jsonEncode({
-          'email': email,
-          'contrasena': password,
-          'idRol': idRol,
-          'estaActivo': estaActivo,
-        }),
-      );
-      
-      if (response.statusCode == 201) {
-        return true;
-      } else {
-        print('Error en el registro - Status: ${response.statusCode}, Body: ${response.body}');
-        return false;
-      }
-    } catch (e) {
-      print('Excepción en el registro: $e');
-      return false;
+  Future<void> tryLoadSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token = prefs.getString(_tokenKey);
+    _userId = prefs.getString(_userIdKey);
+
+    if (_token != null && _userId != null) {
+      _isLoggedIn = true;
+      developer.log('Sesión cargada: userId $_userId', name: 'AuthService');
+    } else {
+      _isLoggedIn = false;
+      developer.log('No se encontró sesión.', name: 'AuthService');
     }
+    notifyListeners();
   }
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final String url = '$_baseUrl/auth/login';
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode({'email': email, 'password': password}), // REVERTIDO
+      );
 
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _token = data['token'];
+        _userId = data['userId']?.toString(); // REVERTIDO
+
+        if (_token == null || _userId == null) {
+          return {'success': false, 'message': 'Respuesta inválida del servidor.'};
+        }
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_tokenKey, _token!);
+        await prefs.setString(_userIdKey, _userId!); 
+
+        _isLoggedIn = true;
+        notifyListeners();
+        developer.log('Login exitoso. userId: $_userId guardado.', name: 'AuthService');
+
+        return {'success': true, 'role': data['rol']}; // REVERTIDO
+      } else {
+        final errorData = jsonDecode(response.body);
+        developer.log('Error en el login: ${response.statusCode} - ${response.body}', name: 'AuthService.login');
+        return {'success': false, 'message': errorData['message'] ?? 'Error desconocido.'}; // REVERTIDO
+      }
+    } catch (e, s) {
+      developer.log('Excepción en el login', error: e, stackTrace: s, name: 'AuthService.login');
+      return {'success': false, 'message': 'No se pudo conectar al servidor.'};
+    }
+  }
+
+  Future<void> logout() async {
+    _token = null;
+    _userId = null;
+    _isLoggedIn = false;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_userIdKey);
+
+    notifyListeners();
+    developer.log('Sesión cerrada y datos limpiados.', name: 'AuthService');
+  }
+
+  Future<bool> register(String email, String password, int idRol, bool estaActivo) async {
+    final String url = '$_baseUrl/auth/registrar'; // REVERTIDO
     try {
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode({
           'email': email,
-          'password': password,
+          'contrasena': password, // REVERTIDO
+          'idRol': idRol,
+          'estaActivo': estaActivo,
         }),
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final new_token = data['token'];
-
-        if (new_token == null) {
-          return {'success': false, 'message': 'No se recibió token en la respuesta.'};
-        }
-
-        // Guardar el token en memoria y en almacenamiento persistente
-        _token = new_token;
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_tokenKey, new_token);
-        print('Token guardado exitosamente.');
-
-        final String? roleString = data['rol'];
-        if (roleString != null) {
-            int roleId;
-            switch (roleString.toLowerCase()) { 
-                case 'propietario': roleId = 1; break;
-                case 'usuario': roleId = 2; break;
-                case 'admin': roleId = 3; break;
-                default: return {'success': false, 'message': 'Rol desconocido: $roleString'};
-            }
-            return {'success': true, 'role': roleId, 'userId': data['userId'].toString()};
-        } else {
-            return {'success': false, 'message': 'Respuesta de API inválida, no se encontró el rol.'};
-        }
-      } else {
-        try {
-            final errorData = jsonDecode(response.body);
-            return {'success': false, 'message': errorData['message'] ?? 'Error desconocido.'};
-        } catch (e) {
-            return {'success': false, 'message': 'Credenciales incorrectas o error del servidor.'};
-        }
-      }
-    } catch (e) {
-      print('Excepción en el login: $e');
-      return {'success': false, 'message': 'No se pudo conectar al servidor.'};
+      return response.statusCode == 201; // REVERTIDO
+    } catch (e, s) {
+      developer.log('Excepción en el registro: $e', stackTrace: s, name: 'AuthService.register');
+      return false;
     }
-  }
-
-  static Future<void> logout() async {
-    _token = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
-    print('Token eliminado y sesión cerrada.');
   }
 }
