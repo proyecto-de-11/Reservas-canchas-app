@@ -34,6 +34,7 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: 'home',
           builder: (BuildContext context, GoRouterState state) {
+            // The TabController is no longer needed here.
             return const HomeScreen();
           },
           routes: <RouteBase>[
