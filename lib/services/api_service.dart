@@ -12,13 +12,13 @@ class LoginResponse {
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
       token: json['token'] as String,
-      userId: json['userId'] as String, // o el campo que devuelva tu API
+      userId: json['userId'].toString(), // o el campo que devuelva tu API
     );
   }
 }
 
 class ApiService {
-  final String _baseUrl = 'http://localhost:8080/api';
+  final String _baseUrl = 'https://apiautentificacion.onrender.com/api';
 
   // --- Inicio de Sesión ---
   Future<LoginResponse?> login(String email, String password) async {

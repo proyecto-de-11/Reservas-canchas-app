@@ -200,9 +200,42 @@ class _HomeScreenState extends State<HomeScreen> {
   final String userName = "Lionel Messi"; // Placeholder for logged-in user
 
   void _onItemTapped(int index) {
+    if (index == 4) { // Special case for logout
+      _showLogoutConfirmationDialog(context);
+      return;
+    }
     if (index == _bottomNavIndex) return;
     setState(() => _bottomNavIndex = index);
   }
+
+  void _showLogoutConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text('Cerrar Sesión', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          content: Text('¿Estás seguro de que quieres cerrar sesión?', style: GoogleFonts.poppins()),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancelar', style: GoogleFonts.poppins(color: Colors.grey[700])),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: Text('Cerrar Sesión', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.bold)),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close the dialog
+                context.go('/');
+              },
+            ),
+          ],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -279,6 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildNavItem(Icons.add_circle_outline, 'Reservar', 1),
             _buildNavItem(Icons.chat_bubble_outline_rounded, 'Chats', 2),
             _buildNavItem(Icons.person_outline_rounded, 'Perfil', 3),
+            _buildNavItem(Icons.logout, 'Salir', 4),
           ],
         ),
       ),
@@ -290,25 +324,26 @@ class _HomeScreenState extends State<HomeScreen> {
     return InkWell(
       onTap: () {
          _onItemTapped(index);
-         switch (index) {
-          case 0: break; // Already home
-          case 1: context.go('/create-reservation'); break;
-          case 2: context.go('/home/chats'); break;
-          case 3: context.go('/profile'); break;
-        }
+          switch (index) {
+            case 0: break; // Already home
+            case 1: context.go('/create-reservation'); break;
+            case 2: context.go('/home/chats'); break;
+            case 3: context.go('/profile'); break;
+            case 4: _showLogoutConfirmationDialog(context); break;
+          }
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
          decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF185a9d).withAlpha(26) : Colors.transparent,
+          color: isSelected && index != 4 ? const Color(0xFF185a9d).withAlpha(26) : Colors.transparent,
           borderRadius: BorderRadius.circular(16)
          ),
         child: Row(
           children: [
-            Icon(icon, color: isSelected ? const Color(0xFF185a9d) : Colors.grey[600], size: 26),
-            if (isSelected) const SizedBox(width: 8),
-            if (isSelected) Text(label, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: const Color(0xFF185a9d))),
+            Icon(icon, color: isSelected && index != 4 ? const Color(0xFF185a9d) : Colors.grey[600], size: 26),
+            if (isSelected && index != 4) const SizedBox(width: 8),
+            if (isSelected && index != 4) Text(label, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: const Color(0xFF185a9d))),
           ],
         ),
       ),
