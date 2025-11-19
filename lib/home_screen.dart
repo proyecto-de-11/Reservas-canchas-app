@@ -186,7 +186,7 @@ class CourtCard extends StatelessWidget {
   }
 }
 
-// --- MAIN SCREEN V12 (Logout Logic Fixed) ---
+// --- MAIN SCREEN V13 (Chat Navigation Re-enabled) ---
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -214,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context.go('/search');
         break;
       case 3: // Chats
-        context.go('/home/chats');
+        context.go('/chats'); // Re-enabled navigation
         break;
       case 4: // Perfil
         context.go('/profile');
