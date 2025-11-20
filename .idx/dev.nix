@@ -26,7 +26,8 @@
       enable = true;
       previews = {
         web = {
-          command = ["flutter" "run" "--machine" "-d" "web-server" "--web-hostname" "0.0.0.0" "--web-port" "$PORT"];
+          # CORRECCIÓN: Añadida la bandera para forzar el WebSocket seguro
+          command = ["flutter" "run" "--machine" "-d" "web-server" "--web-hostname" "0.0.0.0" "--web-port" "$PORT" "--web-server-debug-protocol" "wss"];
           manager = "flutter";
         };
         android = {

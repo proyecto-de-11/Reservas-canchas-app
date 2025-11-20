@@ -250,8 +250,9 @@ class _ChatScreenState extends State<ChatScreen> {
               mini: true,
               onPressed: _sendMessage,
               backgroundColor: const Color(0xFF185a9d),
-              child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
               elevation: 2,
+              // **CORRECCIÓN: `child` al final**
+              child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
             ),
           ],
         ),
@@ -283,7 +284,7 @@ class _MessageBubble extends StatelessWidget {
           ),
            boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.07),
+              color: Colors.black.withAlpha(18),
               blurRadius: 10,
               offset: const Offset(0, 4),
             )

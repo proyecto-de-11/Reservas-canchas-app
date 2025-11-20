@@ -42,7 +42,7 @@ final List<Map<String, dynamic>> mockChats = [
   },
 ];
 
-// --- CHAT LIST SCREEN V2.1 (Back to Home Button Added) ---
+// --- CHAT LIST SCREEN V2.2 (Deprecated withOpacity Fix) ---
 class ChatListScreen extends StatelessWidget {
   const ChatListScreen({super.key});
 
@@ -125,7 +125,7 @@ class ChatListScreen extends StatelessWidget {
   }
 }
 
-// --- CHAT LIST ITEM WIDGET V2 (ELITE DESIGN) ---
+// --- CHAT LIST ITEM WIDGET V2.1 (Deprecated withOpacity Fix) ---
 class ChatListItemV2 extends StatelessWidget {
   final Map<String, dynamic> chat;
 
@@ -137,8 +137,9 @@ class ChatListItemV2 extends StatelessWidget {
 
     return InkWell(
       onTap: () => context.go('/chats/detail', extra: chat),
-      splashColor: const Color(0xFF185a9d).withOpacity(0.1),
-      highlightColor: const Color(0xFF185a9d).withOpacity(0.05),
+      // **CORRECCIÓN: Usar withAlpha en lugar de withOpacity**
+      splashColor: const Color(0xFF185a9d).withAlpha(26), // ~10% opacity
+      highlightColor: const Color(0xFF185a9d).withAlpha(13), // ~5% opacity
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         padding: const EdgeInsets.all(16),
@@ -147,7 +148,8 @@ class ChatListItemV2 extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              // **CORRECCIÓN: Usar withAlpha en lugar de withOpacity**
+              color: Colors.black.withAlpha(20), // ~8% opacity
               blurRadius: 20,
               spreadRadius: -5,
               offset: const Offset(0, 10),
@@ -234,7 +236,9 @@ class ChatListItemV2 extends StatelessWidget {
               color: const Color(0xFF185a9d),
               borderRadius: BorderRadius.circular(12),
                boxShadow: [
-                BoxShadow(color: const Color(0xFF185a9d).withOpacity(0.5), blurRadius: 8, spreadRadius: -2, offset: const Offset(0, 4))]
+                // **CORRECCIÓN: Usar withAlpha en lugar de withOpacity**
+                BoxShadow(color: const Color(0xFF185a9d).withAlpha(128), blurRadius: 8, spreadRadius: -2, offset: const Offset(0, 4)) // ~50% opacity
+                ]
             ),
             child: Text(
               chat['unreadCount'].toString(),

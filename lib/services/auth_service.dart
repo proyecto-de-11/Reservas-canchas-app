@@ -1,21 +1,30 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:myapp/services/api_service.dart';
 import 'dart:developer' as developer;
 
+class LoginResult {
+  final bool success;
+  final String? redirectPath;
+
+  LoginResult({required this.success, this.redirectPath});
+}
+
 class AuthService with ChangeNotifier {
-  final String _baseUrl = 'https://apiautentificacion.onrender.com/api';
+  final ApiService _apiService = ApiService();
+
   String? _token;
   String? _userId;
   bool _isLoggedIn = false;
-
-  static const String _tokenKey = 'auth_token';
-  static const String _userIdKey = 'user_id';
+  bool? _profileExists;
 
   String? get token => _token;
   String? get userId => _userId;
   bool get isLoggedIn => _isLoggedIn;
+  bool? get profileExists => _profileExists;
+
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
 
   AuthService() {
     tryLoadSession();
@@ -28,49 +37,74 @@ class AuthService with ChangeNotifier {
 
     if (_token != null && _userId != null) {
       _isLoggedIn = true;
-      developer.log('Sesión cargada: userId $_userId', name: 'AuthService');
+      notifyListeners();
+      await checkUserProfile();
     } else {
       _isLoggedIn = false;
-      developer.log('No se encontró sesión.', name: 'AuthService');
+    }
+  }
+
+  Future<void> checkUserProfile() async {
+    if (!_isLoggedIn || _userId == null) {
+      _profileExists = false;
+      notifyListeners();
+      return;
+    }
+
+    _profileExists = null;
+    notifyListeners();
+
+    try {
+      final profiles = await _apiService.getPublicProfiles(token: _token);
+      final profile = profiles.firstWhere((p) => p['usuarioId'].toString() == _userId, orElse: () => {});
+      _profileExists = profile.isNotEmpty;
+    } catch (e) {
+      _profileExists = false;
     }
     notifyListeners();
   }
 
-  Future<Map<String, dynamic>> login(String email, String password) async {
-    final String url = '$_baseUrl/auth/login';
+  Future<LoginResult> registerAndLogin(String email, String password) async {
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
-        body: jsonEncode({'email': email, 'password': password}), // REVERTIDO
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        _token = data['token'];
-        _userId = data['userId']?.toString(); // REVERTIDO
-
-        if (_token == null || _userId == null) {
-          return {'success': false, 'message': 'Respuesta inválida del servidor.'};
-        }
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_tokenKey, _token!);
-        await prefs.setString(_userIdKey, _userId!); 
-
-        _isLoggedIn = true;
-        notifyListeners();
-        developer.log('Login exitoso. userId: $_userId guardado.', name: 'AuthService');
-
-        return {'success': true, 'role': data['rol']}; // REVERTIDO
-      } else {
-        final errorData = jsonDecode(response.body);
-        developer.log('Error en el login: ${response.statusCode} - ${response.body}', name: 'AuthService.login');
-        return {'success': false, 'message': errorData['message'] ?? 'Error desconocido.'}; // REVERTIDO
+      final registrationResponse = await _apiService.register(email, password);
+      if (registrationResponse == null) {
+        developer.log('El registro en la API falló.', name: 'AuthService');
+        return LoginResult(success: false);
       }
-    } catch (e, s) {
-      developer.log('Excepción en el login', error: e, stackTrace: s, name: 'AuthService.login');
-      return {'success': false, 'message': 'No se pudo conectar al servidor.'};
+      
+      developer.log('Registro exitoso. Procediendo a login automático.', name: 'AuthService');
+      return await login(email, password);
+
+    } catch (e) {
+      developer.log('Excepción durante el proceso de registro y login.', error: e, name: 'AuthService');
+      return LoginResult(success: false);
+    }
+  }
+
+  Future<LoginResult> login(String email, String password) async {
+    try {
+      final loginResponse = await _apiService.login(email, password);
+
+      if (loginResponse == null) {
+        return LoginResult(success: false);
+      }
+
+      _token = loginResponse.token;
+      _userId = loginResponse.userId.toString();
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_tokenKey, _token!);
+      await prefs.setString(_userIdKey, _userId!); 
+
+      _isLoggedIn = true;
+      notifyListeners();
+      
+      await checkUserProfile();
+
+      return LoginResult(success: true, redirectPath: '/home');
+
+    } catch (e) {
+      return LoginResult(success: false);
     }
   }
 
@@ -78,32 +112,12 @@ class AuthService with ChangeNotifier {
     _token = null;
     _userId = null;
     _isLoggedIn = false;
+    _profileExists = null;
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_userIdKey);
 
     notifyListeners();
-    developer.log('Sesión cerrada y datos limpiados.', name: 'AuthService');
-  }
-
-  Future<bool> register(String email, String password, int idRol, bool estaActivo) async {
-    final String url = '$_baseUrl/auth/registrar'; // REVERTIDO
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
-        body: jsonEncode({
-          'email': email,
-          'contrasena': password, // REVERTIDO
-          'idRol': idRol,
-          'estaActivo': estaActivo,
-        }),
-      );
-      return response.statusCode == 201; // REVERTIDO
-    } catch (e, s) {
-      developer.log('Excepción en el registro: $e', stackTrace: s, name: 'AuthService.register');
-      return false;
-    }
   }
 }

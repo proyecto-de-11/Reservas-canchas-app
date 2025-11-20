@@ -70,7 +70,6 @@ class _SportsPreferencesScreenState extends State<SportsPreferencesScreen> {
         borderRadius: BorderRadius.circular(12),
         selectedColor: Colors.white,
         fillColor: const Color(0xFF007BFF),
-        splashColor: const Color(0xFF007BFF).withOpacity(0.12),
         borderColor: Colors.grey[300],
         selectedBorderColor: const Color(0xFF007BFF),
         children: [
@@ -137,13 +136,13 @@ class _SportsPreferencesScreenState extends State<SportsPreferencesScreen> {
           color: isSelected ? color : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? color : Colors.grey[300]!,
+            color: isSelected ? color : Colors.grey.shade300,
             width: 2,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: color.withOpacity(0.3),
+                    color: color.withAlpha(76),
                     blurRadius: 10,
                     spreadRadius: 2,
                     offset: const Offset(0, 4),
@@ -213,11 +212,11 @@ class _SportsPreferencesScreenState extends State<SportsPreferencesScreen> {
         fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

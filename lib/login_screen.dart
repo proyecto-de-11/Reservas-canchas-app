@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/services/auth_service.dart';
-import 'package:provider/provider.dart'; // Asegúrate de que provider esté importado
+import 'package:provider/provider.dart';
+import 'dart:developer' as developer;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,27 +26,35 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
 
-    // Usamos el AuthService desde el Provider
     final authService = Provider.of<AuthService>(context, listen: false);
 
     try {
-      final result = await authService.login(
+      final LoginResult result = await authService.login(
         _emailController.text,
         _passwordController.text,
       );
 
-      // El redirect del GoRouter se encargará de la navegación.
-      // Ya no necesitamos la navegación explícita aquí.
-      if (result['success'] != true) {
-         setState(() {
-          _errorMessage = result['message'] ?? 'Error desconocido al iniciar sesión.';
-        });
+      if (result.success && result.redirectPath != null) {
+        // **AÑADIMOS EL MICRÓFONO AQUÍ**
+        developer.log(
+          'LOGINSCREEN: ¡Orden de navegación enviada! Destino: ${result.redirectPath}',
+          name: 'LoginScreen.Nav',
+        );
+        if (mounted) context.go(result.redirectPath!); 
+      } else {
+         if (mounted) {
+          setState(() {
+            _errorMessage = 'Email o contraseña incorrectos. Inténtalo de nuevo.';
+          });
+        }
       }
 
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Ocurrió un error inesperado: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Ocurrió un error inesperado: $e';
+        });
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -67,7 +76,6 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // -- Cabecera --
                 Text(
                   'Bienvenido de Nuevo',
                   textAlign: TextAlign.center,
@@ -88,7 +96,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // -- Campo de Email --
                 _buildTextField(
                   controller: _emailController,
                   label: 'Correo Electrónico',
@@ -97,7 +104,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // -- Campo de Contraseña --
                 _buildTextField(
                   controller: _passwordController,
                   label: 'Contraseña',
@@ -106,7 +112,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // -- Mensaje de Error --
                 if (_errorMessage != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16.0),
@@ -120,7 +125,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                // -- Botón de Ingresar --
                 ElevatedButton(
                   onPressed: _login,
                   style: ElevatedButton.styleFrom(
@@ -131,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 5,
-                    shadowColor: const Color(0xFF185a9d).withAlpha(102), // CORREGIDO
+                    shadowColor: const Color(0xFF185a9d).withAlpha(102),
                   ),
                   child: _isLoading
                       ? const SizedBox(
@@ -151,7 +155,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // -- Enlace de Registro --
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

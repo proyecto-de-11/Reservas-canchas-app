@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'dart:developer' as developer;
 
 import 'package:myapp/home_screen.dart';
 import 'package:myapp/login_screen.dart';
-import 'package:myapp/register_screen.dart';
+import 'package:myapp/screens/register_screen.dart'; // Importación corregida
+import 'package:myapp/screens/create_profile_screen.dart';
 import 'package:myapp/screens/search_users_screen.dart';
 import 'package:myapp/screens/chat_list_screen.dart';
 import 'package:myapp/screens/chat_screen.dart';
@@ -38,20 +40,31 @@ class MyApp extends StatelessWidget {
 
     final router = GoRouter(
       refreshListenable: authService,
-      initialLocation: '/login',
+      initialLocation: '/login', 
+      
       redirect: (context, state) {
         final isLoggedIn = authService.isLoggedIn;
-        final isLoggingIn = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+        final location = state.matchedLocation;
 
-        if (!isLoggedIn && !isLoggingIn) {
+        developer.log(
+          'GoRouter Check: Logueado=$isLoggedIn, Destino solicitado=${state.uri}, Ubicación actual=$location',
+          name: 'GoRouter.Redirect',
+        );
+
+        final isPublicRoute = location == '/login' || location == '/register';
+
+        if (!isLoggedIn && !isPublicRoute) {
+          developer.log('Decisión: NO Logueado y en ruta privada. REDIRIGIENDO a /login', name: 'GoRouter.Redirect');
           return '/login';
         }
 
-        if (isLoggedIn && isLoggingIn) {
-          return '/home';
+        if (isLoggedIn && isPublicRoute) {
+            developer.log('Decisión: SÍ Logueado y en ruta pública. REDIRIGIENDO a /home', name: 'GoRouter.Redirect');
+            return '/home';
         }
 
-        return null;
+        developer.log('Decisión: Sin redirección global. PERMITIENDO NAVEGACIÓN a $location', name: 'GoRouter.Redirect');
+        return null; 
       },
       routes: [
         GoRoute(
@@ -61,6 +74,10 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/register',
           builder: (context, state) => const RegisterScreen(),
+        ),
+        GoRoute(
+          path: '/create-profile',
+          builder: (context, state) => const CreateProfileScreen(),
         ),
         GoRoute(
           path: '/home',

@@ -7,7 +7,6 @@ import 'package:myapp/services/auth_service.dart';
 import 'dart:developer' as developer;
 
 class ProfileScreen extends StatefulWidget {
-  // 1. ACEPTAR UN userId OPCIONAL
   final String? userId;
   const ProfileScreen({super.key, this.userId});
 
@@ -20,16 +19,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<UserProfile?>? _userProfileFuture;
 
   @override
-  void initState() {
-    super.initState();
-    // 2. USAR LA LÓGICA DE CARGA EN didChangeDependencies PARA ACCEDER AL PROVIDER
-    // DE FORMA SEGURA.
-  }
-
-  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Solo cargar si no se ha cargado ya
     if (_userProfileFuture == null) {
       _loadProfile();
     }
@@ -38,33 +29,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _loadProfile() {
     final authService = Provider.of<AuthService>(context, listen: false);
     
-    // 3. DETERMINAR QUÉ ID USAR
-    String? profileIdToLoad;
-    if (widget.userId != null) {
-      // Si se pasa un ID, se usa ese (para ver perfiles de otros)
-      profileIdToLoad = widget.userId;
-    } else {
-      // Si no, se usa el del usuario logueado (para ver el propio perfil)
-      profileIdToLoad = authService.userId;
-    }
+    // **CORRECCIÓN: Aseguramos que profileIdToLoad es de tipo String?**
+    String? profileIdToLoad = widget.userId ?? authService.userId;
 
     if (profileIdToLoad != null) {
       setState(() {
-        _userProfileFuture = _apiService.getUserProfile(profileIdToLoad!);
+        // **CORRECCIÓN: Pasamos un String, como espera el método**
+        _userProfileFuture = _apiService.getUserProfile(profileIdToLoad);
       });
     } else {
       developer.log("Error: No se pudo determinar un ID de perfil para cargar.", name: 'ProfileScreen', level: 1000);
        setState(() {
-        _userProfileFuture = Future.value(null); // Para que el FutureBuilder muestre error
+        _userProfileFuture = Future.value(null);
        });
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context, listen: false);
-    // Determina si estamos viendo nuestro propio perfil
+    // **CORRECCIÓN: Comparación segura entre Strings**
     final isMyProfile = widget.userId == null || widget.userId == authService.userId;
 
     return Scaffold(
@@ -116,7 +100,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (userProfile.bio != null && userProfile.bio!.isNotEmpty)
                   _buildBiographyCard(userProfile.bio!),
                 const SizedBox(height: 20),
-                // Solo mostrar botón de logout si es mi perfil
                 if(isMyProfile)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -128,7 +111,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           },
         ),
       ),
-      // Solo mostrar botón de editar si es mi perfil
       floatingActionButton: isMyProfile ? FloatingActionButton(
         onPressed: () {},
         backgroundColor: const Color(0xFF007BFF),

@@ -5,7 +5,6 @@ import 'package:myapp/services/api_service.dart';
 import 'package:myapp/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import 'dart:developer' as developer;
 
 class SearchUsersScreen extends StatefulWidget {
   const SearchUsersScreen({super.key});
@@ -109,7 +108,7 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [const Color(0xFFF8F9FA), Colors.grey[200]!],
+            colors: [const Color(0xFFF8F9FA), Colors.grey.shade200],
           ),
           image: const DecorationImage(
             image: NetworkImage('https://www.transparenttextures.com/patterns/noise-lines.png'),
@@ -199,7 +198,6 @@ class _UserCardState extends State<UserCard> {
     final imageUrl = widget.profile['fotoPerfil'] as String?;
     final bool hasValidImage = imageUrl != null && imageUrl.isNotEmpty && Uri.tryParse(imageUrl)?.hasAbsolutePath == true;
     
-    // LA SOLUCIÓN FINAL: Usar la clave correcta 'usuarioId' y convertir a String.
     final userId = widget.profile['usuarioId']?.toString();
 
     return TweenAnimationBuilder<double>(
@@ -245,7 +243,7 @@ class _UserCardState extends State<UserCard> {
                       children: [
                         CircleAvatar(
                           radius: 30,
-                          backgroundImage: hasValidImage ? NetworkImage(imageUrl!) : null,
+                          backgroundImage: hasValidImage ? NetworkImage(imageUrl) : null,
                           backgroundColor: Colors.grey[200],
                           child: !hasValidImage ? Icon(Icons.person_outline, size: 32, color: Colors.grey[500]) : null,
                         ),

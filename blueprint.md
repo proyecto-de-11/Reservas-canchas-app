@@ -1,8 +1,8 @@
-# Blueprint: Aplicación con Autenticación y Pantallas Funcionales para Jugadores
+# Blueprint: Aplicación con Autenticación y Flujo de Perfil para Jugadores
 
 ## Descripción General
 
-Crear una aplicación Flutter enfocada en jugadores, con un flujo de autenticación completo, una `HomeScreen` elegante, un formulario detallado para `Crear Reservas` y una pantalla de `Perfil de Usuario` rica en información. La navegación se gestiona con `go_router`.
+Crear una aplicación Flutter enfocada en jugadores, con un flujo de autenticación completo, una pantalla para completar el perfil después del registro, una `HomeScreen` elegante, un formulario para `Crear Reservas` y una pantalla de `Perfil de Usuario`. La navegación se gestiona con `go_router`.
 
 ## Estilo y Diseño
 
@@ -18,7 +18,7 @@ Crear una aplicación Flutter enfocada en jugadores, con un flujo de autenticaci
 
 ### 1. Pantalla de Inicio de Sesión (`login_screen.dart`)
 
-- **Ruta:** `/`
+- **Ruta:** `/login`
 - **Diseño:** Formulario de inicio de sesión simplificado.
 - **Integración con API:** La función `login` en `auth_service.dart` consume el endpoint de la API de login (`/api/auth/login`).
 
@@ -27,56 +27,64 @@ Crear una aplicación Flutter enfocada en jugadores, con un flujo de autenticaci
 - **Ruta:** `/register`
 - **Diseño:** Formulario de registro simplificado.
 - **Lógica:**
-    - El rol del nuevo usuario se asigna automáticamente como "Jugador" por defecto.
-    - El estado de la cuenta se establece como "Activada" por defecto.
+    - El rol del nuevo usuario se asigna automáticamente como "Jugador".
+    - El estado de la cuenta se establece como "Activada".
+    - **Después de un registro exitoso, el usuario es redirigido a `/create-profile` para completar su información.**
 
-### 3. Pantalla de Inicio (`home_screen.dart`)
+### 3. **NUEVO:** Pantalla de Creación de Perfil (`create_profile_screen.dart`)
+
+- **Ruta:** `/create-profile`
+- **Propósito:** Permitir a los nuevos usuarios rellenar su perfil inmediatamente después de registrarse.
+- **Diseño:** Un formulario completo con los siguientes campos:
+    - `nombreCompleto`
+    - `telefono`
+    - `documentoIdentidad`
+    - `fechaNacimiento` (usando un `DatePicker`)
+    - `genero` (usando un `DropdownButton` con opciones "masculino", "femenino", "otro")
+    - `fotoPerfil`
+    - `biografia`
+    - `ciudad`
+    - `pais`
+- **Lógica:**
+    - El `usuarioID` se obtiene del usuario que acaba de registrarse.
+    - Al enviar el formulario, se llama a un nuevo método `createProfile` en `api_service.dart`.
+    - **Tras la creación exitosa del perfil, el usuario es redirigido a `/home`.**
+
+### 4. Pantalla de Inicio (`home_screen.dart`)
 
 - **Ruta:** `/home`
 - **Diseño:** Saludo de bienvenida y tarjeta de acción principal.
 - **Navegación:** El `Drawer` permite navegar a `/create-reservation` y `/profile`.
 
-### 4. Pantalla de Crear Reserva (`create_reservation_screen.dart`)
+### 5. Pantalla de Crear Reserva (`create_reservation_screen.dart`)
 
 - **Ruta:** `/create-reservation`
 - **Diseño:** Formulario detallado para crear una nueva reserva.
 
-### 5. Pantalla de Perfil (`profile_screen.dart`)
+### 6. Pantalla de Perfil (`profile_screen.dart`)
 
-- **Ruta:** `/profile`
-- **Diseño Detallado:**
-    - **Cabecera de Perfil:** Muestra una foto de perfil (con un icono para cambiarla), el nombre completo del usuario y su correo.
-    - **Tarjeta de "Información Personal":**
-        - Nombre completo
-        - Documento de identidad
-        - Fecha de nacimiento
-        - Género
-    - **Tarjeta de "Información de Contacto":**
-        - Teléfono
-        - Ciudad
-        - País
-    - **Tarjeta de "Biografía":** Un espacio para una descripción personal.
-    - **Botón de Cerrar Sesión:** Para salir de la aplicación.
-    - **Botón de Editar (FAB):** Un `FloatingActionButton` con un icono de lápiz, preparado para activar el modo de edición.
-- **Navegación:** El botón "Cerrar Sesión" redirige a `/`.
+- **Ruta:** `/profile/:userId`
+- **Diseño Detallado:** Muestra la información completa del perfil del usuario.
+- **Navegación:** El botón "Cerrar Sesión" redirige a `/login`.
 
 ## Navegación (Routing)
 
 La navegación es manejada por `go_router`. Las rutas configuradas son:
 
-- `/`: `LoginScreen`.
+- `/login`: `LoginScreen`.
 - `/register`: `RegisterScreen`.
+- **NUEVO:** `/create-profile`: `CreateProfileScreen`.
 - `/home`: `HomeScreen`.
 - `/create-reservation`: `CreateReservationScreen`.
-- `/profile`: `ProfileScreen`.
+- `/profile/:userId`: `ProfileScreen`.
+- `/search`: `SearchUsersScreen`.
+- `/chats`: `ChatListScreen`.
+- `/chat/:userId`: `ChatScreen`.
 
-## Pasos de Implementación Realizados
+## Plan de Implementación Actual
 
-1.  **Flujo de Autenticación y `HomeScreen`:** Implementación inicial.
-2.  **Formulario de Reserva:** Construcción y corrección de errores.
-3.  **Pantalla de Perfil (Versión 1):** Creación inicial y conexión de la ruta.
-4.  **Rediseño Detallado de la Pantalla de Perfil:** Se reestructuró `profile_screen.dart` para incluir toda la información solicitada y un diseño más rico.
-5.  **Simplificación del Registro:** Se modificó `register_screen.dart` para agilizar la creación de cuentas.
-6.  **Ajuste del Servicio de Login:** Se corrigió `auth_service.dart` para que la función de login envíe los campos correctos a la API.
-7.  **Eliminación de Flujo de Propietario:** Se eliminaron todas las pantallas y rutas relacionadas con la funcionalidad de propietario (`OwnerHomeScreen`, `ManageCourtScreen`, `CreateCourtScreen`) para enfocar la aplicación exclusivamente en los usuarios (jugadores).
-8.  **Actualización de Blueprint:** Se documentaron todos los cambios realizados.
+1.  **Actualizar `api_service.dart`:** Añadir el método `createProfile`.
+2.  **Crear `lib/screens/create_profile_screen.dart`:** Construir el formulario de perfil.
+3.  **Actualizar `main.dart`:** Añadir la nueva ruta `/create-profile`.
+4.  **Modificar `register_screen.dart`:** Redirigir a `/create-profile` tras un registro exitoso.
+

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/services/auth_service.dart';
-import 'package:provider/provider.dart'; // Importación añadida
+import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,12 +12,8 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
-  // AuthService se obtendrá del Provider, ya no es necesario instanciarlo aquí.
-  // final AuthService _authService = AuthService();
-
   bool _obscurePassword = true;
-  final bool _estaActivo = true;
-  final int _idRol = 2;
+  bool _isLoading = false;
 
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -35,11 +31,9 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
     );
-
     _controller.forward();
     _emailFocusNode.addListener(() => setState(() {}));
     _passwordFocusNode.addListener(() => setState(() {}));
@@ -56,26 +50,28 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   void _register() async {
-    // Se añade la comprobación de `mounted` antes de la llamada asíncrona.
     if (!mounted) return;
+    setState(() => _isLoading = true);
 
     final authService = Provider.of<AuthService>(context, listen: false);
     
-    bool success = await authService.register(
+    // **LA CORRECCIÓN MÁS IMPORTANTE: Llamar a `registerAndLogin`**
+    final result = await authService.registerAndLogin(
       _emailController.text,
       _passwordController.text,
-      _idRol,
-      _estaActivo,
     );
 
-    // Se vuelve a comprobar `mounted` después de la llamada asíncrona.
     if (!mounted) return;
+    setState(() => _isLoading = false);
 
-    if (success) {
-      context.go('/home');
+    if (result.success) {
+      context.go('/create-profile');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error en el registro. Inténtalo de nuevo.')),
+        const SnackBar(
+          content: Text('Error en el registro. El email podría ya estar en uso.'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -97,37 +93,37 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           SafeArea(
             child: FadeTransition(
               opacity: _fadeAnimation,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-                    _buildHeader(),
-                    const SizedBox(height: 40),
-                    _buildTextField(
-                      controller: _emailController,
-                      focusNode: _emailFocusNode,
-                      icon: Icons.alternate_email,
-                      hint: 'Correo Electrónico',
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      controller: _passwordController,
-                      focusNode: _passwordFocusNode,
-                      icon: Icons.lock_outline,
-                      hint: 'Contraseña',
-                      isPassword: true,
-                      obscureText: _obscurePassword,
-                      toggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
-                    ),
-                    const SizedBox(height: 40),
-                    _buildRegisterButton(),
-                    const SizedBox(height: 30),
-                    _buildLoginLink(),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-                  ],
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildHeader(),
+                      const SizedBox(height: 40),
+                      _buildTextField(
+                        controller: _emailController,
+                        focusNode: _emailFocusNode,
+                        icon: Icons.alternate_email,
+                        hint: 'Correo Electrónico',
+                      ),
+                      const SizedBox(height: 20),
+                      _buildTextField(
+                        controller: _passwordController,
+                        focusNode: _passwordFocusNode,
+                        icon: Icons.lock_outline,
+                        hint: 'Contraseña',
+                        isPassword: true,
+                        obscureText: _obscurePassword,
+                        toggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                      const SizedBox(height: 40),
+                      _isLoading ? const Center(child: CircularProgressIndicator(color: Colors.white)) : _buildRegisterButton(),
+                      const SizedBox(height: 30),
+                      _buildLoginLink(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -184,11 +180,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
               )
             : null,
         filled: true,
-        fillColor: Colors.white.withAlpha(38), // CORREGIDO
+        fillColor: Colors.white.withAlpha(38),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withAlpha(77)), // CORREGIDO
+          borderSide: BorderSide(color: Colors.white.withAlpha(77)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -218,7 +214,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
   Widget _buildLoginLink() {
     return GestureDetector(
-      onTap: () => context.go('/'),
+      onTap: () => context.go('/login'),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

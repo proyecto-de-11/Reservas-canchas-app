@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:myapp/models/user_profile.dart';
-import 'package:myapp/services/api_service.dart';
 import 'package:myapp/services/auth_service.dart';
 import 'package:provider/provider.dart';
 
-// ... (Data Mocks and Elite Widgets remain the same) ...
-
+// Los widgets de data y UI (cards, headers) se mantienen igual.
+// ... (pegar los widgets de datos y UI de la versión anterior aquí)
 // --- DATA MOCKS V12 ---
 final List<Map<String, dynamic>> tournaments = [
    {
@@ -200,41 +198,25 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _bottomNavIndex = 0;
-  Future<UserProfile?>? _userProfileFuture;
-  final ApiService _apiService = ApiService();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final userId = authService.userId;
-      if (userId != null) {
-        setState(() {
-          _userProfileFuture = _apiService.getUserProfile(userId);
-        });
-      }
-    });
-  }
 
   void _onItemTapped(int index) {
-    if (index == 2) {
-      context.go('/create-reservation');
-      return;
-    }
-
+    if (index == _bottomNavIndex) return;
     switch (index) {
-      case 0: // Home
-        if (_bottomNavIndex != 0) setState(() => _bottomNavIndex = 0);
+      case 0:
+        setState(() => _bottomNavIndex = 0);
         break;
-      case 1: // Buscar
+      case 1:
         context.go('/search');
         break;
-      case 3: // Chats
+      case 2:
+        context.go('/create-reservation');
+        break;
+      case 3:
         context.go('/chats');
         break;
-      case 4: // Perfil
-        context.go('/profile');
+      case 4:
+        final authService = Provider.of<AuthService>(context, listen: false);
+        context.go('/profile/${authService.userId}');
         break;
     }
   }
@@ -243,148 +225,170 @@ class _HomeScreenState extends State<HomeScreen> {
     final authService = Provider.of<AuthService>(context, listen: false);
     showDialog(
       context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text('Cerrar Sesión', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-          content: Text('¿Estás seguro de que quieres cerrar sesión?', style: GoogleFonts.poppins()),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancelar', style: GoogleFonts.poppins(color: Colors.grey[700])),
-              onPressed: () => Navigator.of(dialogContext).pop(),
-            ),
-            TextButton(
-              child: Text('Cerrar Sesión', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.bold)),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                authService.logout();
-              },
-            ),
-          ],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-        );
-      },
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: Text('Cerrar Sesión', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        content: Text('¿Estás seguro?', style: GoogleFonts.poppins()),
+        actions: [
+          TextButton(child: const Text('Cancelar'), onPressed: () => Navigator.of(dialogContext).pop()),
+          TextButton(
+            child: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              authService.logout();
+            },
+          ),
+        ],
+      ),
     );
-  }
-
-  void _onProfileMenuSelected(String value) {
-    switch (value) {
-      case 'profile':
-        context.go('/profile');
-        break;
-      case 'logout':
-        _showLogoutConfirmationDialog(context);
-        break;
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: _buildHeader(),
+    return Consumer<AuthService>(
+      builder: (context, authService, child) {
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F9FA),
+          appBar: _buildAppBar(authService),
+          body: _buildBody(authService),
+          bottomNavigationBar: _buildFloatingBottomNavBar(),
+        );
+      },
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(AuthService authService) {
+    if (authService.profileExists != true) {
+      return AppBar(backgroundColor: const Color(0xFFF8F9FA), elevation: 0);
+    }
+    
+    return AppBar(
+        title: Text('Bienvenido', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87)),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) => value == 'logout' ? _showLogoutConfirmationDialog(context) : context.go('/profile/${authService.userId}'),
+            offset: const Offset(0, 50),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'profile',
+                child: ListTile(leading: Icon(Icons.person_outline), title: Text('Mi Perfil')),
+              ),
+              const PopupMenuDivider(),
+              const PopupMenuItem(
+                value: 'logout',
+                child: ListTile(leading: Icon(Icons.logout, color: Colors.red), title: Text('Cerrar Sesión', style: TextStyle(color: Colors.red))),
+              ),
+            ],
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: CircleAvatar(radius: 24, backgroundImage: NetworkImage("https://i.pravatar.cc/150?u=${authService.userId}")),
+            ),
+          ),
+        ],
         backgroundColor: const Color(0xFFF8F9FA),
         elevation: 0,
         toolbarHeight: 80,
         automaticallyImplyLeading: false,
-      ),
-      body: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          const SectionHeader(title: 'Torneos Destacados', icon: Icons.emoji_events_outlined),
-          SizedBox(
-            height: 190,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: tournaments.length,
-              padding: const EdgeInsets.only(right: 16),
-              itemBuilder: (context, index) => TournamentCard(tournamentData: tournaments[index]),
-            ),
+      );
+  }
+
+  Widget _buildBody(AuthService authService) {
+    final profileExists = authService.profileExists;
+
+    if (profileExists == null) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (profileExists == false) {
+      return _buildCreateProfilePrompt(context);
+    } else {
+      return _buildMainContent();
+    }
+  }
+
+  Widget _buildCreateProfilePrompt(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(Icons.assignment_ind_outlined, size: 80, color: Color(0xFF185a9d)),
+              const SizedBox(height: 24),
+              Text(
+                '¡Casi listo!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Para disfrutar de todas las funciones y conectar con otros jugadores, necesitas completar tu perfil.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[700]),
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.arrow_forward_rounded),
+                label: const Text('Crear Mi Perfil'),
+                onPressed: () => context.go('/create-profile'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF185a9d),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
           ),
-          const SectionHeader(title: 'Actividad Reciente', icon: Icons.whatshot_outlined),
-          ...teamRequests.map((request) => TeamRequestCard(requestData: request)),
-          ...courts.map((court) => CourtCard(courtData: court)),
-          const SizedBox(height: 100),
-        ],
+        ),
       ),
-      bottomNavigationBar: _buildFloatingBottomNavBar(),
     );
   }
 
-  Widget _buildHeader() {
-    return FutureBuilder<UserProfile?>(
-      future: _userProfileFuture,
-      builder: (context, snapshot) {
-        String userName = "Usuario";
-        String userImage = "https://picsum.photos/200";
-
-        if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
-          userName = snapshot.data!.fullName;
-          if (snapshot.data!.profilePictureUrl != null && snapshot.data!.profilePictureUrl!.isNotEmpty) {
-             userImage = snapshot.data!.profilePictureUrl!;
-          }
-        }
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('Bienvenido', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87)),
-            const Spacer(),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(userName, style: GoogleFonts.poppins(fontSize: 18, color: Colors.grey[700], fontWeight: FontWeight.w600)),
-                const SizedBox(width: 12),
-                PopupMenuButton<String>(
-                  onSelected: _onProfileMenuSelected,
-                  offset: const Offset(0, 50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      value: 'profile',
-                      child: ListTile(leading: const Icon(Icons.person_outline), title: Text('Ver Perfil', style: GoogleFonts.poppins())),
-                    ),
-                    const PopupMenuDivider(),
-                    PopupMenuItem<String>(
-                      value: 'logout',
-                      child: ListTile(leading: const Icon(Icons.logout, color: Colors.red), title: Text('Cerrar Sesión', style: GoogleFonts.poppins(color: Colors.red))),
-                    ),
-                  ],
-                  child: CircleAvatar(
-                    radius: 26,
-                    backgroundImage: NetworkImage(userImage),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
+  Widget _buildMainContent() {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        const SectionHeader(title: 'Torneos Destacados', icon: Icons.emoji_events_outlined),
+        SizedBox(
+          height: 190,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: tournaments.length,
+            padding: const EdgeInsets.only(right: 16),
+            itemBuilder: (context, index) => TournamentCard(tournamentData: tournaments[index]),
+          ),
+        ),
+        const SectionHeader(title: 'Actividad Reciente', icon: Icons.whatshot_outlined),
+        ...teamRequests.map((request) => TeamRequestCard(requestData: request)),
+        ...courts.map((court) => CourtCard(courtData: court)),
+        const SizedBox(height: 100),
+      ],
     );
   }
 
   Widget _buildFloatingBottomNavBar() {
     return SafeArea(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [BoxShadow(color: Colors.black.withAlpha(30), blurRadius: 20, spreadRadius: 2)],
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 20, spreadRadius: 2)],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(Icons.home_filled, 0, label: 'Inicio'),
+              _buildNavItem(Icons.search, 1, label: 'Buscar'),
+              _buildMiddleNavItem(),
+              _buildNavItem(Icons.chat_bubble_outline_rounded, 3, label: 'Chats'),
+              _buildNavItem(Icons.person_outline_rounded, 4, label: 'Perfil'),
+            ],
+          ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Icons.home_filled, 0, label: 'Inicio'),
-            _buildNavItem(Icons.search, 1, label: 'Buscar'),
-            _buildMiddleNavItem(),
-            _buildNavItem(Icons.chat_bubble_outline_rounded, 3, label: 'Chats'),
-            _buildNavItem(Icons.person_outline_rounded, 4, label: 'Perfil'),
-          ],
-        ),
-      ),
-    );
+      );
   }
 
    Widget _buildNavItem(IconData icon, int index, {String? label}) {
