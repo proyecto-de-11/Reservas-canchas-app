@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:myapp/services/api_service.dart';
 import 'package:myapp/services/auth_service.dart';
+import 'package:provider/provider.dart';
 
 class CreateProfileScreen extends StatefulWidget {
   const CreateProfileScreen({super.key});
@@ -15,33 +15,46 @@ class CreateProfileScreen extends StatefulWidget {
 
 class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _apiService = ApiService();
+  final _fullNameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _idController = TextEditingController();
+  final _birthDateController = TextEditingController();
+  final _bioController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _countryController = TextEditingController();
+  final _profilePicController = TextEditingController();
 
-  // Controladores para cada campo del formulario
-  final _nombreCompletoController = TextEditingController();
-  final _telefonoController = TextEditingController();
-  final _documentoIdentidadController = TextEditingController();
-  final _fechaNacimientoController = TextEditingController();
-  final _fotoPerfilController = TextEditingController();
-  final _biografiaController = TextEditingController();
-  final _ciudadController = TextEditingController();
-  final _paisController = TextEditingController();
-  String? _generoValue;
-  DateTime? _selectedDate;
+  String? _selectedGender;
+  DateTime? _selectedBirthDate;
 
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _nombreCompletoController.dispose();
-    _telefonoController.dispose();
-    _documentoIdentidadController.dispose();
-    _fechaNacimientoController.dispose();
-    _fotoPerfilController.dispose();
-    _biografiaController.dispose();
-    _ciudadController.dispose();
-    _paisController.dispose();
+    _fullNameController.dispose();
+    _phoneController.dispose();
+    _idController.dispose();
+    _birthDateController.dispose();
+    _bioController.dispose();
+    _cityController.dispose();
+    _countryController.dispose();
+    _profilePicController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedBirthDate ?? DateTime.now(),
+      firstDate: DateTime(1920, 1),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedBirthDate) {
+      setState(() {
+        _selectedBirthDate = picked;
+        _birthDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
   }
 
   Future<void> _submitForm() async {
@@ -49,75 +62,51 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
       setState(() => _isLoading = true);
 
       final authService = Provider.of<AuthService>(context, listen: false);
-      final token = authService.token;
-      final userIdString = authService.userId; 
+      final apiService = ApiService();
 
-      if (token == null || userIdString == null) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Error de autenticación. Por favor, inicia sesión de nuevo.'),
-          backgroundColor: Colors.red,
-        ));
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      final userIdInt = int.tryParse(userIdString);
-      if (userIdInt == null) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Error interno: El ID de usuario no es válido.'),
-          backgroundColor: Colors.red,
-        ));
+      if (authService.userId == null || authService.token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: Usuario no autenticado.')),
+        );
         setState(() => _isLoading = false);
         return;
       }
 
       final profileData = {
-        'usuarioId': userIdInt,
-        'nombreCompleto': _nombreCompletoController.text,
-        'telefono': _telefonoController.text,
-        'documentoIdentidad': _documentoIdentidadController.text,
-        'fechaNacimiento': _fechaNacimientoController.text,
-        'genero': _generoValue,
-        'fotoPerfil': _fotoPerfilController.text,
-        'biografia': _biografiaController.text,
-        'ciudad': _ciudadController.text,
-        'pais': _paisController.text,
+        'usuarioId': authService.userId!,
+        'nombreCompleto': _fullNameController.text,
+        'telefono': _phoneController.text,
+        'documentoIdentidad': _idController.text,
+        'fechaNacimiento': _birthDateController.text,
+        'genero': _selectedGender,
+        'fotoPerfil': _profilePicController.text,
+        'biografia': _bioController.text,
+        'ciudad': _cityController.text,
+        'pais': _countryController.text,
       };
 
-      final success = await _apiService.createProfile(profileData, token);
+      final success = await apiService.createProfile(profileData, authService.token!);
 
       if (!mounted) return;
-      setState(() => _isLoading = false);
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('¡Perfil creado con éxito!'),
-          backgroundColor: Colors.green,
-        ));
-        context.go('/home');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Error al crear el perfil. Inténtalo de nuevo.'),
-          backgroundColor: Colors.red,
-        ));
-      }
-    }
-  }
+        // ¡Paso clave! Cerrar la sesión actual antes de redirigir.
+        await authService.logout();
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime(2000),
-      firstDate: DateTime(1920),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-        _fechaNacimientoController.text = DateFormat('yyyy-MM-dd').format(picked);
-      });
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('¡Perfil creado! Por favor, inicia sesión de nuevo.')),
+        );
+        
+        // Ahora, la redirección a /login funcionará como se espera.
+        context.go('/login');
+      } else {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al crear el perfil. Inténtalo de nuevo.')),
+        );
+      }
     }
   }
 
@@ -125,72 +114,54 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Completa tu Perfil', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text('Completar Perfil', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, Colors.grey.shade100],
-          ),
-        ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildTextFormField(_nombreCompletoController, 'Nombre Completo', Icons.person_outline),
-                _buildTextFormField(_telefonoController, 'Teléfono', Icons.phone_outlined),
-                _buildTextFormField(_documentoIdentidadController, 'Documento de Identidad', Icons.badge_outlined),
-                _buildDatePickerFormField(),
-                _buildGenderDropdown(),
-                _buildTextFormField(_fotoPerfilController, 'URL de Foto de Perfil', Icons.link_outlined),
-                _buildTextFormField(_biografiaController, 'Biografía', Icons.edit_outlined, maxLines: 3),
-                _buildTextFormField(_ciudadController, 'Ciudad', Icons.location_city_outlined),
-                _buildTextFormField(_paisController, 'País', Icons.flag_outlined),
-                const SizedBox(height: 32),
-                _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : ElevatedButton(
-                        onPressed: _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: const Color(0xFF007BFF),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text('Guardar Perfil', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildTextField(_fullNameController, 'Nombre Completo'),
+              _buildTextField(_phoneController, 'Teléfono'),
+              _buildTextField(_idController, 'Documento de Identidad'),
+              _buildDateField(),
+              _buildGenderDropdown(),
+              _buildTextField(_profilePicController, 'URL de Foto de Perfil (Opcional)', isOptional: true),
+              _buildTextField(_bioController, 'Biografía (Opcional)', isOptional: true, maxLines: 3),
+              _buildTextField(_cityController, 'Ciudad'),
+              _buildTextField(_countryController, 'País'),
+              const SizedBox(height: 32),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                      onPressed: _submitForm,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-              ],
-            ),
+                      child: const Text('Guardar Perfil'),
+                    ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTextFormField(TextEditingController controller, String label, IconData icon, {int maxLines = 1}) {
+  Widget _buildTextField(TextEditingController controller, String label, {bool isOptional = false, int maxLines = 1}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, color: Colors.grey[600]),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF007BFF), width: 2),
-          ),
-        ),
+        decoration: InputDecoration(labelText: label, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
         validator: (value) {
-          if (value == null || value.isEmpty) {
+          if (!isOptional && (value == null || value.isEmpty)) {
             return 'Este campo es obligatorio';
           }
           return null;
@@ -199,24 +170,19 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     );
   }
 
-  Widget _buildDatePickerFormField() {
+  Widget _buildDateField() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
-        controller: _fechaNacimientoController,
-        readOnly: true,
+        controller: _birthDateController,
         decoration: InputDecoration(
           labelText: 'Fecha de Nacimiento',
-          prefixIcon: Icon(Icons.calendar_today_outlined, color: Colors.grey[600]),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          suffixIcon: const Icon(Icons.calendar_today),
         ),
+        readOnly: true,
         onTap: () => _selectDate(context),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Este campo es obligatorio';
-          }
-          return null;
-        },
+        validator: (value) => (value == null || value.isEmpty) ? 'Este campo es obligatorio' : null,
       ),
     );
   }
@@ -225,24 +191,13 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: DropdownButtonFormField<String>(
-        initialValue: _generoValue,
-        decoration: InputDecoration(
-          labelText: 'Género',
-          prefixIcon: Icon(Icons.wc_outlined, color: Colors.grey[600]),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        items: ['masculino', 'femenino', 'otro'].map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value[0].toUpperCase() + value.substring(1)), // Capitalize
-          );
-        }).toList(),
-        onChanged: (newValue) {
-          setState(() {
-            _generoValue = newValue;
-          });
-        },
-        validator: (value) => value == null ? 'Este campo es obligatorio' : null,
+        value: _selectedGender,
+        decoration: InputDecoration(labelText: 'Género', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+        items: ['Masculino', 'Femenino', 'Otro']
+            .map((gender) => DropdownMenuItem(value: gender, child: Text(gender)))
+            .toList(),
+        onChanged: (value) => setState(() => _selectedGender = value),
+        validator: (value) => (value == null) ? 'Selecciona un género' : null,
       ),
     );
   }

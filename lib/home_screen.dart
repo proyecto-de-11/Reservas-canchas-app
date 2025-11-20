@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myapp/services/api_service.dart';
 import 'package:myapp/services/auth_service.dart';
 import 'package:provider/provider.dart';
+import 'package:myapp/models/user_profile.dart';
 
-// Los widgets de data y UI (cards, headers) se mantienen igual.
-// ... (pegar los widgets de datos y UI de la versión anterior aquí)
 // --- DATA MOCKS V12 ---
 final List<Map<String, dynamic>> tournaments = [
    {
@@ -198,6 +198,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _bottomNavIndex = 0;
+  late Future<UserProfile?> _userProfileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    final authService = Provider.of<AuthService>(context, listen: false);
+    if (authService.isLoggedIn && authService.userId != null) {
+      _userProfileFuture = ApiService().getUserProfile(authService.userId!, token: authService.token);
+    } else {
+      _userProfileFuture = Future.value(null);
+    }
+  }
 
   void _onItemTapped(int index) {
     if (index == _bottomNavIndex) return;
@@ -260,36 +272,61 @@ class _HomeScreenState extends State<HomeScreen> {
     if (authService.profileExists != true) {
       return AppBar(backgroundColor: const Color(0xFFF8F9FA), elevation: 0);
     }
-    
+
     return AppBar(
-        title: Text('Bienvenido', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87)),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) => value == 'logout' ? _showLogoutConfirmationDialog(context) : context.go('/profile/${authService.userId}'),
-            offset: const Offset(0, 50),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'profile',
-                child: ListTile(leading: Icon(Icons.person_outline), title: Text('Mi Perfil')),
-              ),
-              const PopupMenuDivider(),
-              const PopupMenuItem(
-                value: 'logout',
-                child: ListTile(leading: Icon(Icons.logout, color: Colors.red), title: Text('Cerrar Sesión', style: TextStyle(color: Colors.red))),
-              ),
-            ],
+      flexibleSpace: FutureBuilder<UserProfile?>(
+        future: _userProfileFuture,
+        builder: (context, snapshot) {
+          String displayName = 'Bienvenido';
+          String? photoUrl;
+
+          if (snapshot.connectionState == ConnectionState.done && snapshot.hasData && snapshot.data != null) {
+            displayName = 'Hola, ${snapshot.data!.fullName.split(' ').first}';
+            photoUrl = snapshot.data!.profilePictureUrl;
+          }
+
+          return SafeArea(
             child: Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: CircleAvatar(radius: 24, backgroundImage: NetworkImage("https://i.pravatar.cc/150?u=${authService.userId}")),
+              padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(displayName, style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  PopupMenuButton<String>(
+                    onSelected: (value) => value == 'logout' ? _showLogoutConfirmationDialog(context) : context.go('/profile/${authService.userId}'),
+                    offset: const Offset(0, 50),
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'profile',
+                        child: ListTile(leading: Icon(Icons.person_outline), title: Text('Mi Perfil')),
+                      ),
+                      const PopupMenuDivider(),
+                      const PopupMenuItem(
+                        value: 'logout',
+                        child: ListTile(leading: Icon(Icons.logout, color: Colors.red), title: Text('Cerrar Sesión', style: TextStyle(color: Colors.red))),
+                      ),
+                    ],
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundImage: (photoUrl != null && photoUrl.isNotEmpty)
+                          ? NetworkImage(photoUrl)
+                          : NetworkImage("https://i.pravatar.cc/150?u=${authService.userId}") as ImageProvider,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-        backgroundColor: const Color(0xFFF8F9FA),
-        elevation: 0,
-        toolbarHeight: 80,
-        automaticallyImplyLeading: false,
-      );
+          );
+        },
+      ),
+      backgroundColor: const Color(0xFFF8F9FA),
+      elevation: 0,
+      toolbarHeight: 80,
+      automaticallyImplyLeading: false,
+    );
   }
+
 
   Widget _buildBody(AuthService authService) {
     final profileExists = authService.profileExists;
